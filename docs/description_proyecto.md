@@ -370,7 +370,7 @@ Reglas adicionales sobre el horizonte de financiamiento:
 
 ### 3.9 Subyacente Terceros para Totales (imagen 10)
 
-Necesaria para alimentar el sub-bloque “Terceros” de la `[Tabla Totales]`. Estructura: misma matriz `M[n, t]` que los bloques anteriores, pero **agregando todas las hectáreas** que generan producción de **terceros externa** (esto incluye los sub-proyectos del bloque 3 — Talsa, Diamond Bridge — porque son los que activan la métrica de Terceros; **pendiente de confirmar** si los bloques 1 y 2 también contribuyen aquí).
+Necesaria para alimentar el sub-bloque “Terceros” de la `[Tabla Totales]`. Estructura: misma matriz `M[n, t]` que los bloques anteriores, alimentada **exclusivamente** por las hectáreas del **bloque 3 (Nuevos Prod Terceros)** — sub-proyectos `Talsa`, `Diamond Bridge`, etc. Los bloques 1 (Crecimiento HF) y 2 (Recambio varietal) **no** contribuyen aquí.
 
 ```
 ProducciónTerceros(n, t)  [tn]    = ( Σ ha(P, V, t − n) )
@@ -516,9 +516,7 @@ Terceros · Ganancia(t)   [miles$] = Σ_V GananciaTerceros(t)          (de §3.9
    - §3.4.2 — `Productividad HF Terceros = Productividad × Densidad × %Recaudación` (lectura directa de [Tabla datos usuario variedad]).
    - §3.8.1 — Ganancia de Nuevos Prod Terceros usa la **suma** de `Ganancia Royaltie FOB — venta propia + venta productor`.
    - §3.8.2 — Truncamiento por `Financiamiento` se mide en **campañas absolutas desde la siembra**.
-
-   **Pendiente aún:**
-   - §3.9 — confirmar qué bloques (1, 2, 3) contribuyen al sub-bloque “Terceros” de Totales (hipótesis actual: solo bloque 3 — Nuevos Prod Terceros — pendiente de validar contra imagen 10).
+   - §3.9 — el sub-bloque “Terceros” de Totales lo alimenta **exclusivamente** el bloque 3 (Nuevos Prod Terceros).
 7. **Performance.** Para un escenario típico (≤10 variedades × ≤7 años × ≤6 temporadas × 3 bloques) los cálculos son del orden de cientos de operaciones; cabe holgadamente en memoria. No optimizar prematuramente.
 8. **Seguridad y multiusuario.** Aislamiento por `scenario_id` y `user_id`; las Reglas/Definiciones son por escenario, no globales (un usuario puede tener varios escenarios con royaltías distintas).
 9. **Auditoría.** Persistir en `audit_log` cada cambio relevante (variedad creada, regla modificada, escenario confirmado) en JSONB; útil para *diffs* entre versiones del business plan.
