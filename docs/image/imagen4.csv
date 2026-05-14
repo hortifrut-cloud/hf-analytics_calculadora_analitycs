@@ -1,0 +1,9 @@
+Variedad,Productor,Variable,Unidades,Año 1,Año 2,Año 3,Año 4,Año 5,Año 6,Año 7
+Nombre variedad 1,Hortifrut producción interna,Productividad,Kg/ha,13000,19500,26000,32500,32500,32500,32500
+Nombre variedad 1,Hortifrut producción interna,Ganancia FOB,FOB/ha,52000,78000,104000,130000,130000,130000,130000
+Nombre variedad 1,Hortifrut producción terceros,Productividad,Kg/ha,13000,19500,23400,26000,22750,19500,19500
+Nombre variedad 1,Hortifrut producción terceros,Ganancia Royaltie FOB - venta propia,FOB/ha,6240,9360,11232,12480,10920,9360,9360
+Nombre variedad 1,Hortifrut producción terceros,Ganancia Royaltie FOB - venta productor,FOB/ha,0,0,1248,3120,4680,6240,6240
+Nombre variedad 1,Terceros,Productividad,Kg/ha,0,0,2600,6500,9750,13000,13000
+Nombre variedad 1,Terceros,Ganancia FOB - venta Hortifrut,FOB/ha,45760,68640,82368,91520,80080,68640,68640
+Nombre variedad 1,Terceros,Ganancia FOB - venta propia,FOB/ha,0,0,9152,22880,34320,45760,45760

@@ -1,0 +1,66 @@
+# ===== Hortifrut-Analytics: Cartilla 767 =====
+
+# R Related
+.Rhistory
+.RData
+.Ruserdata
+.Rapp.history
+.Rproj.user/
+.Rprofile
+*.Rout
+*.Rpkgstatus
+
+# Datasets y Datos Pesados (Local)
+data/
+*.csv
+*.xlsx
+*.parquet
+*.db
+*.sqlite
+!data/README.md
+
+# Python & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+.cache/
+
+# Agents & AI Tools
+.claude/
+.agents/
+.opencode/
+graphify-out/
+CLAUDE.md
+AGENTS.md
+.antigravityignore
+.claudeignore
+.graphifyignore
+opencode.json
+
+# OS & IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Multimedia
+*.jpg
+*.png
+*.jpeg
+*.mp4
+*.webp
+*.gif
+
+# Excepciones: docs/image
+!/docs/image/
+!/docs/image/*.png
+!/docs/image/*.csv
