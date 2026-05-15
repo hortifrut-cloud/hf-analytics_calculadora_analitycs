@@ -4,7 +4,7 @@ Fecha de modificación: 14/05/2026
 Autor: Alex Prieto
 
 Descripción:
-Factoría de motores y sesiones de base de datos. Implementa una lógica dual 
+Factoría de motores y sesiones de base de datos. Implementa una lógica dual
 para soportar SQLite (desarrollo/tests) y PostgreSQL/Supabase (producción).
 
 Acciones Principales:
