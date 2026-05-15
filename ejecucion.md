@@ -212,7 +212,7 @@ uv run python -c "from rsconnect.main import cli; cli()" add `
 uv run python -c "from rsconnect.main import cli; cli()" deploy shiny . `
     --entrypoint app:app `
     --name $env:rsconnect_usuario `
-    --title "HF-Breeding-Planner" `
+    --title "calculadora_analitycs" `
     --new
 ```
 
@@ -224,14 +224,15 @@ uv run python -c "from rsconnect.main import cli; cli()" deploy shiny . `
 Una vez desplegada, anotar el `app-id` que aparece en el dashboard de ShinyApps.io:
 
 ```powershell
+# APP_ID: <registrar aquí el ID después del primer deploy>
 uv run python -c "from rsconnect.main import cli; cli()" deploy shiny . `
     --entrypoint app:app `
     --name $env:rsconnect_usuario `
     --app-id <APP_ID>
 ```
 
-> Guardar el `app-id` en `ejecucion.md` o en el README del equipo para no tener que
-> buscarlo cada vez.
+> El `app-id` aparece en la URL del dashboard de ShinyApps.io y también en la salida
+> del primer deploy. Registrarlo aquí para no tener que buscarlo en cada redeploy.
 
 ### 5.5 Verificación post-despliegue
 
