@@ -77,10 +77,19 @@ def _add_txt_id(bloque: str) -> str:
     return f"txt_add_sub_{bloque}"
 
 
-def _subproyectos_for(state, bloque_key: str) -> list[str]:
-    """Resuelve la lista activa de sub-proyectos para un bloque del escenario."""
-    if state is not None and state.subproyectos.get(bloque_key):
-        return list(state.subproyectos[bloque_key])
+def _subproyectos_for(state, bloque_key: str, variety_name: str) -> list[str]:
+    """
+    Resuelve la lista activa de sub-proyectos para (bloque, variedad).
+
+    Si la variedad aún no tiene una lista persistida, devuelve los defaults
+    del bloque. Cada variedad gestiona su lista de forma independiente.
+    """
+    if state is None or not variety_name:
+        return list(_DEFAULT_SUBPROYECTOS[bloque_key])
+    bloque_map = state.subproyectos.get(bloque_key) or {}
+    labels = bloque_map.get(variety_name)
+    if labels:
+        return list(labels)
     return list(_DEFAULT_SUBPROYECTOS[bloque_key])
 
 
@@ -144,9 +153,11 @@ def new_projects_server(
     scenario_id_rv: reactive.Value,
     prev_derived_fn: Callable,
 ) -> None:
-    # Debounce state: pending ha changes
+    # Debounce state: captura pendiente de hectáreas (vals + variedad + timestamp).
+    # NOTA: ya no se mantiene un "_last_saved" comparado en memoria. La
+    # comparación de cambios se hace contra el estado real de DB (state)
+    # para evitar persistir capturas cruzadas entre variedades.
     _pending: reactive.Value[dict | None] = reactive.value(None)
-    _last_saved: reactive.Value[dict | None] = reactive.value(None)
 
     @render.ui
     def new_projects_content() -> ui.Tag:
@@ -208,7 +219,7 @@ def new_projects_server(
         bloque_cards = []
         for bloque_key in _BLOQUE_KINDS:
             bloque_label = _BLOQUE_LABELS[bloque_key]
-            subproyectos = _subproyectos_for(state, bloque_key)
+            subproyectos = _subproyectos_for(state, bloque_key, sel_variety)
             rows: list[ui.Tag] = []
 
             # Header de temporadas + columna para el botón de eliminar
@@ -347,24 +358,32 @@ def new_projects_server(
 
     @reactive.effect
     def _collect_ha() -> None:
-        """Captura todos los valores de ha para la variedad activa."""
+        """
+        Captura los valores de hectáreas mostrados actualmente en pantalla.
+
+        Solo crea dependencia reactiva sobre los inputs `ha_*` y el `state`.
+        El `variety_filter` se lee dentro de `reactive.isolate()` para NO
+        re-disparar la captura al cambiar el filtro — eso evita la carrera
+        en la que se leerían inputs aún sin actualizar (valores de la
+        variedad anterior) y se asociarían a la variedad nueva, persistiendo
+        valores cruzados y provocando un bucle de re-render.
+        """
         state = state_fn()
         if not state or not state.varieties:
             return
 
         variety_names = [v.name for v in state.varieties]
-        try:
-            sel_variety = input.variety_filter()
-        except Exception:
-            sel_variety = variety_names[0] if variety_names else ""
+        with reactive.isolate():
+            try:
+                sel_variety = input.variety_filter()
+            except Exception:
+                sel_variety = variety_names[0]
         if not sel_variety or sel_variety not in variety_names:
-            sel_variety = variety_names[0] if variety_names else ""
-        if not sel_variety:
-            return
+            sel_variety = variety_names[0]
 
         vals: dict[tuple[str, str, str], float] = {}
         for bloque_key in _BLOQUE_KINDS:
-            for sub in _subproyectos_for(state, bloque_key):
+            for sub in _subproyectos_for(state, bloque_key, sel_variety):
                 for s in ALL_SEASONS:
                     iid = _ha_id(bloque_key, sub, s)
                     try:
@@ -378,13 +397,26 @@ def new_projects_server(
         )
 
     @reactive.effect
+    @reactive.event(input.variety_filter, ignore_init=True)
+    def _on_filter_change() -> None:
+        """
+        Al cambiar la variedad activa, descarta capturas pendientes que
+        pudieran corresponder al estado anterior. Cuando la UI termine de
+        re-renderizar, `_collect_ha` capturará los inputs actualizados.
+        """
+        _pending.set(None)
+
+    @reactive.effect
     def _debounced_flush() -> None:
         """
-        Persiste solo las celdas que cambiaron desde el último guardado.
+        Persiste solo las celdas que difieren del estado guardado en DB.
 
-        Compara celda a celda contra `_last_saved` para construir la lista
-        de cambios y llama `batch_upsert_ha_cells` una sola vez (6 queries
-        en total, en lugar de N×8 queries individuales).
+        La comparación se hace contra `state.new_project_cells` (snapshot
+        real cargado desde DB / caché) en lugar de un `_last_saved` en
+        memoria. Esto garantiza que si por cualquier razón la captura
+        pendiente refleja la variedad anterior, igual nada cambia (porque
+        el diff contra DB para la nueva variedad será trivial) y el sistema
+        converge en lugar de quedar en bucle.
         """
         reactive.invalidate_later(1.5)
         p = _pending.get()
@@ -393,20 +425,26 @@ def new_projects_server(
         if time.monotonic() - p["t"] < 1.45:
             return
 
-        last = _last_saved.get()
-        # Comparación rápida del dict completo para el caso sin cambios
-        if last and last.get("vals") == p["vals"] and last.get("variety") == p["variety"]:
+        state = state_fn()
+        if state is None:
             return
 
-        sid = scenario_id_rv.get()
         variety = p["variety"]
-        last_vals: dict = last.get("vals", {}) if last else {}
+        variety_names = {v.name for v in state.varieties}
+        if variety not in variety_names:
+            _pending.set(None)
+            return
 
-        # Solo procesar celdas que realmente cambiaron
+        # Snapshot real de hectáreas en DB para la variedad activa
+        db_vals: dict[tuple[str, str, str], float] = {}
+        for cell in state.new_project_cells:
+            if cell.variety_name == variety:
+                db_vals[(cell.bloque.value, cell.sub_proyecto, cell.season)] = cell.hectareas
+
         changed_cells: list[NewProjectCell] = []
         for (bloque_key, sub, season), ha in p["vals"].items():
-            last_ha = last_vals.get((bloque_key, sub, season), 0.0)
-            if abs(ha - last_ha) < 1e-9:  # Sin cambio
+            db_ha = db_vals.get((bloque_key, sub, season), 0.0)
+            if abs(ha - db_ha) < 1e-9:
                 continue
             try:
                 changed_cells.append(
@@ -421,10 +459,13 @@ def new_projects_server(
             except Exception:
                 pass
 
+        # Consumir el pending pase lo que pase, para evitar reflush del mismo
+        _pending.set(None)
+
         if changed_cells:
+            sid = scenario_id_rv.get()
             try:
                 batch_upsert_ha_cells(sid, changed_cells)
-                _last_saved.set({"vals": p["vals"], "variety": variety})
                 reload_fn()
             except Exception:
                 pass
@@ -432,6 +473,19 @@ def new_projects_server(
     # -----------------------------------------------------------------------
     # Gestión de sub-proyectos (Agregar / Eliminar)
     # -----------------------------------------------------------------------
+
+    def _active_variety_name(state) -> str:
+        """Variedad actualmente seleccionada en el filtro (o la primera disponible)."""
+        if state is None or not state.varieties:
+            return ""
+        names = [v.name for v in state.varieties]
+        try:
+            sel = input.variety_filter()
+        except Exception:
+            sel = names[0]
+        if not sel or sel not in names:
+            sel = names[0]
+        return sel
 
     def _make_add_handler(bloque_key: str) -> Callable:
         """Crea un effect que reacciona al botón Agregar de un bloque concreto."""
@@ -449,7 +503,10 @@ def new_projects_server(
             label = (raw or "").strip()
             if not label:
                 return
-            ok = add_subproyecto(sid, bloque_key, label)
+            variety = _active_variety_name(state_fn())
+            if not variety:
+                return
+            ok = add_subproyecto(sid, bloque_key, label, variety)
             if ok:
                 reload_fn()
 
@@ -469,12 +526,15 @@ def new_projects_server(
         state = state_fn()
         if not state:
             return
+        variety = _active_variety_name(state)
+        if not variety:
+            return
         sid = scenario_id_rv.get()
         prev = _del_clicks.get()
         new_counts = dict(prev)
         triggered: list[tuple[str, str]] = []
         for bloque_key in _BLOQUE_KINDS:
-            for sub in _subproyectos_for(state, bloque_key):
+            for sub in _subproyectos_for(state, bloque_key, variety):
                 iid = _del_id(bloque_key, sub)
                 try:
                     n = int(getattr(input, iid)() or 0)
@@ -488,5 +548,5 @@ def new_projects_server(
             # el reload re-dispara la effect en cascada.
             _del_clicks.set(new_counts)
             for bloque_key, sub in triggered:
-                remove_subproyecto(sid, bloque_key, sub)
+                remove_subproyecto(sid, bloque_key, sub, variety)
             reload_fn()
