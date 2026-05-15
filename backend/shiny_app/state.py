@@ -379,34 +379,37 @@ def get_variety_id(scenario_id: int, variety_name: str) -> int | None:
         return v.id if v else None
 
 
-def add_subproyecto(scenario_id: int, bloque_kind: str, label: str) -> bool:
+def add_subproyecto(
+    scenario_id: int, bloque_kind: str, label: str, variety_name: str
+) -> bool:
     """
-    Registra un nuevo sub-proyecto para el (scenario, bloque).
+    Registra un nuevo sub-proyecto para la combinación (scenario, bloque, variedad).
 
     Crea (o reutiliza) el `NewProjectGroup` y persiste un `NewProjectSubrow`
-    ancla asociado a la primera variedad del escenario, sin valores de
-    hectáreas. La presencia de ese subrow es lo que mantiene visible el
-    sub-proyecto en la UI tras recargar.
+    ancla específico para la variedad indicada, sin valores de hectáreas.
+    La presencia de ese subrow es lo que mantiene visible el sub-proyecto
+    en la UI tras recargar. La lista es independiente por variedad.
 
     Args:
         scenario_id (int): ID del escenario.
-        bloque_kind (str): Valor de BloqueKind (crecimiento_hf, recambio_varietal, nuevos_terceros).
+        bloque_kind (str): Valor de BloqueKind.
         label (str): Nombre del sub-proyecto a crear.
+        variety_name (str): Variedad a la cual asociar el sub-proyecto.
 
     Returns:
-        bool: True si se creó; False si el label ya existía o no hay variedades.
+        bool: True si se creó; False si el label ya existía para esa
+        variedad o la variedad no existe.
     """
     from backend.db.models import NewProjectGroup, NewProjectSubrow, Variety
 
     label = label.strip()
-    if not label:
+    if not label or not variety_name:
         return False
 
     with _session() as s:
         v = (
             s.query(Variety)
-            .filter_by(scenario_id=scenario_id)
-            .order_by(Variety.position.asc(), Variety.id.asc())
+            .filter_by(scenario_id=scenario_id, name=variety_name)
             .first()
         )
         if v is None:
@@ -424,7 +427,7 @@ def add_subproyecto(scenario_id: int, bloque_kind: str, label: str) -> bool:
 
         existing = (
             s.query(NewProjectSubrow)
-            .filter_by(group_id=g.id, label=label)
+            .filter_by(group_id=g.id, variety_id=v.id, label=label)
             .first()
         )
         if existing is not None:
@@ -437,22 +440,35 @@ def add_subproyecto(scenario_id: int, bloque_kind: str, label: str) -> bool:
     return True
 
 
-def remove_subproyecto(scenario_id: int, bloque_kind: str, label: str) -> None:
+def remove_subproyecto(
+    scenario_id: int, bloque_kind: str, label: str, variety_name: str
+) -> None:
     """
-    Elimina un sub-proyecto y todas sus hectáreas asociadas (cascada).
+    Elimina un sub-proyecto y sus hectáreas para una variedad específica.
 
-    Borra todos los `NewProjectSubrow` que coincidan con
-    `(scenario_id, bloque_kind, label)`, sin importar la variedad. Sus
-    `NewProjectHa` desaparecen vía cascade.
+    Solo borra el `NewProjectSubrow` que coincida con
+    `(scenario_id, bloque_kind, variety_name, label)`. Otras variedades
+    conservan su lista intacta. Sus `NewProjectHa` se eliminan en cascada.
 
     Args:
         scenario_id (int): ID del escenario.
         bloque_kind (str): Valor de BloqueKind.
         label (str): Nombre del sub-proyecto a eliminar.
+        variety_name (str): Variedad de la que se elimina.
     """
-    from backend.db.models import NewProjectGroup, NewProjectSubrow
+    from backend.db.models import NewProjectGroup, NewProjectSubrow, Variety
+
+    if not variety_name:
+        return
 
     with _session() as s:
+        v = (
+            s.query(Variety)
+            .filter_by(scenario_id=scenario_id, name=variety_name)
+            .first()
+        )
+        if v is None:
+            return
         g = (
             s.query(NewProjectGroup)
             .filter_by(scenario_id=scenario_id, kind=bloque_kind)
@@ -460,7 +476,11 @@ def remove_subproyecto(scenario_id: int, bloque_kind: str, label: str) -> None:
         )
         if g is None:
             return
-        subrows = s.query(NewProjectSubrow).filter_by(group_id=g.id, label=label).all()
+        subrows = (
+            s.query(NewProjectSubrow)
+            .filter_by(group_id=g.id, variety_id=v.id, label=label)
+            .all()
+        )
         for sr in subrows:
             s.delete(sr)
         s.commit()

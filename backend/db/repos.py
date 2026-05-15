@@ -122,19 +122,24 @@ def _orm_to_pydantic_scenario(
         financiamiento_anios=r.financiamiento_anios if r else 5,
     )
 
-    # NewProjectCells + subproyectos activos (labels distintos por bloque)
+    # NewProjectCells + subproyectos activos (labels distintos por (bloque, variedad))
     cells: list[NewProjectCell] = []
     variety_id_to_name = {v.id: v.name for v in orm.varieties}
-    subproyectos: dict[str, list[str]] = {}
+    subproyectos: dict[str, dict[str, list[str]]] = {}
     for group in orm.new_project_groups:
         bloque = BloqueKind(group.kind)
-        labels_seen: list[str] = []
-        labels_set: set[str] = set()
+        by_variety: dict[str, list[str]] = {}
+        seen: dict[str, set[str]] = {}
         for subrow in group.subrows:
-            if subrow.label not in labels_set:
-                labels_seen.append(subrow.label)
-                labels_set.add(subrow.label)
             variety_name = variety_id_to_name.get(subrow.variety_id, "")
+            if not variety_name:
+                continue
+            if variety_name not in seen:
+                by_variety[variety_name] = []
+                seen[variety_name] = set()
+            if subrow.label not in seen[variety_name]:
+                by_variety[variety_name].append(subrow.label)
+                seen[variety_name].add(subrow.label)
             for ha in subrow.ha_values:
                 if ha.hectareas > 0:
                     cells.append(
@@ -146,8 +151,8 @@ def _orm_to_pydantic_scenario(
                             hectareas=ha.hectareas,
                         )
                     )
-        if labels_seen:
-            subproyectos[group.kind] = labels_seen
+        if by_variety:
+            subproyectos[group.kind] = by_variety
 
     return ScenarioState(
         name=orm.name,

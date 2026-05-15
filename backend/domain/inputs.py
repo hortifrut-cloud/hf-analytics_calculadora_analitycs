@@ -143,10 +143,13 @@ class ScenarioState(BaseModel):
     varieties: list[Variety]
     rules: Rules
     new_project_cells: list[NewProjectCell]
-    # Labels de sub-proyectos activos por bloque (clave: BloqueKind.value).
-    # Permite que la UI muestre sub-proyectos creados por el usuario aunque
-    # no tengan aún ha asignadas. Si la clave no está, la UI aplica defaults.
-    subproyectos: dict[str, list[str]] = Field(default_factory=dict)
+    # Labels de sub-proyectos activos por (bloque, variedad).
+    # Estructura: {bloque_kind: {variety_name: [labels]}}. Permite que la
+    # UI muestre sub-proyectos creados por el usuario aunque no tengan
+    # hectáreas asignadas. La lista es independiente por variedad, de modo
+    # que eliminar un sub-proyecto en una variedad no afecta a las demás.
+    # Si la clave de variedad no existe, la UI aplica defaults.
+    subproyectos: dict[str, dict[str, list[str]]] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _check_variety_references(self) -> "ScenarioState":
