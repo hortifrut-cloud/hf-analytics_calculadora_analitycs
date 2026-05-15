@@ -2,7 +2,7 @@
 $root = Split-Path -Parent $PSScriptRoot
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", `
-    "cd '$root'; uv run python -m uvicorn app:app --reload --port 8000 --reload-exclude '.venv'"
+    "cd '$root'; uv run python -m uvicorn app:app --reload --port 8000 --reload-exclude '.venv' --reload-exclude 'scratch' --reload-exclude 'docs' --reload-exclude 'tests' --reload-exclude 'frontend'"
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", `
     "cd '$root\frontend'; pnpm run dev"

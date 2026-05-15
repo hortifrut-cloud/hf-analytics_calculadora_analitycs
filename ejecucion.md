@@ -99,7 +99,7 @@ Esto crea `var/app.db` con el escenario canónico de UI.png ya cargado.
 **Terminal 1 — Backend (Starlette + Shiny):**
 
 ```powershell
-uv run python -m uvicorn app:app --reload --port 8000 --reload-exclude ".venv"
+uv run python -m uvicorn app:app --reload --port 8000 --reload-exclude ".venv" --reload-exclude "scratch" --reload-exclude "docs" --reload-exclude "tests" --reload-exclude "frontend"
 ```
 
 **Terminal 2 — Frontend (Astro dev server):**
