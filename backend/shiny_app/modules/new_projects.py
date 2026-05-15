@@ -1,0 +1,253 @@
+"""SECCIÓN 4 — Nuevos Proyectos (ha editables + subtotales server-side)."""
+
+from __future__ import annotations
+
+import time
+from typing import Callable
+
+from shiny import module, reactive, render, ui
+
+from backend.domain.enums import ALL_SEASONS, BloqueKind
+from backend.domain.inputs import NewProjectCell
+from backend.shiny_app.state import upsert_ha_cell
+
+_SEASON_LABELS = ["T26/27", "T27/28", "T28/29", "T29/30", "T30/31", "T31/32"]
+
+_BLOQUE_META: dict[str, tuple[str, list[str]]] = {
+    "crecimiento_hf": ("1. Crecimiento Hortifrut", ["CHAO", "OLMOS"]),
+    "recambio_varietal": ("2. Recambio varietal", ["CHAO", "OLMOS"]),
+    "nuevos_terceros": ("3. Nuevos Prod Terceros", ["Talsa", "Diamond Bridge"]),
+}
+
+
+def _ha_id(bloque: str, sub: str, season: str) -> str:
+    return f"ha_{bloque}_{sub}_{season}".replace(" ", "_")
+
+
+def _fmt(v: object) -> str:
+    if v is None:
+        return "—"
+    try:
+        f = float(v)  # type: ignore[arg-type]
+        if f == 0:
+            return "—"
+        return f"{f:,.0f}"
+    except (TypeError, ValueError):
+        return "—"
+
+
+@module.ui
+def new_projects_ui() -> ui.Tag:
+    return ui.div(
+        ui.tags.span("SECCIÓN 4 · NUEVOS PROYECTOS", class_="section-title"),
+        ui.output_ui("new_projects_content"),
+    )
+
+
+@module.server
+def new_projects_server(
+    input: ui.input,  # noqa: A002
+    output: ui.output,
+    session: ui.session,
+    *,
+    state_fn: Callable,
+    derived_fn: Callable,
+    reload_fn: Callable,
+    scenario_id_rv: reactive.Value,
+) -> None:
+    # Debounce state: pending ha changes
+    _pending: reactive.Value[dict | None] = reactive.value(None)
+    _last_saved: reactive.Value[dict | None] = reactive.value(None)
+
+    @render.ui
+    def new_projects_content() -> ui.Tag:
+        state = state_fn()
+        if state is None:
+            return ui.p("Cargando…", class_="text-muted")
+
+        if not state.varieties:
+            return ui.div(
+                ui.tags.p(
+                    "Crea al menos una variedad (Sección 2) para habilitar Nuevos Proyectos.",
+                    class_="hf-warning",
+                ),
+                title="Crea al menos una variedad para habilitar Nuevos Proyectos",
+            )
+
+        variety_names = [v.name for v in state.varieties]
+        derived = derived_fn()
+
+        # Selector de variedad
+        selector = ui.layout_columns(
+            ui.input_select(
+                "variety_filter",
+                "Filtro Variedad:",
+                choices={n: n for n in variety_names},
+                selected=variety_names[0],
+            ),
+            col_widths=(4,),
+        )
+
+        # Determinar variedad activa
+        try:
+            sel_variety = input.variety_filter()
+        except Exception:
+            sel_variety = variety_names[0]
+        if not sel_variety or sel_variety not in variety_names:
+            sel_variety = variety_names[0]
+
+        # Construir ha_dict para variedad activa
+        ha_dict: dict[tuple[str, str, str], float] = {}
+        for cell in state.new_project_cells:
+            if cell.variety_name == sel_variety:
+                ha_dict[(cell.bloque.value, cell.sub_proyecto, cell.season)] = cell.hectareas
+
+        bloque_cards = []
+        for bloque_key, (bloque_label, subproyectos) in _BLOQUE_META.items():
+            rows: list[ui.Tag] = []
+
+            # Header de temporadas
+            rows.append(
+                ui.tags.tr(
+                    ui.tags.th("Sub-proyecto"),
+                    ui.tags.th("Unidad"),
+                    *[ui.tags.th(lbl) for lbl in _SEASON_LABELS],
+                )
+            )
+
+            # Filas de ha editables
+            for sub in subproyectos:
+                ha_cells = []
+                for s in ALL_SEASONS:
+                    iid = _ha_id(bloque_key, sub, s)
+                    val = ha_dict.get((bloque_key, sub, s), 0.0)
+                    ha_cells.append(
+                        ui.tags.td(
+                            ui.input_numeric(
+                                iid,
+                                "",
+                                value=val,
+                                min=0,
+                                step=50,
+                                width="80px",
+                            ),
+                            class_="ha-input",
+                        )
+                    )
+                rows.append(
+                    ui.tags.tr(ui.tags.td(sub), ui.tags.td("ha"), *ha_cells)
+                )
+
+            # Filas de subtotales (de derived state)
+            sub_prod: dict[str, float] = {}
+            sub_gan: dict[str, float] = {}
+            sub_plant: dict[str, float] = {}
+
+            if derived:
+                _bloque_result_key = {
+                    "crecimiento_hf": "crecimiento",
+                    "recambio_varietal": "recambio",
+                    "nuevos_terceros": "nuevos_terceros",
+                }[bloque_key]
+                bloque_data = derived.get(_bloque_result_key, {}).get(sel_variety, {})
+                sub_prod = bloque_data.get("produccion", {})
+                sub_gan = bloque_data.get("ganancia", {})
+                if bloque_key == "nuevos_terceros":
+                    sub_plant = derived.get("plantines", {}).get(sel_variety, {})
+
+            def subtotal_row(label: str, unit: str, data: dict) -> ui.Tag:
+                cells = [ui.tags.td(label), ui.tags.td(unit)]
+                for s in ALL_SEASONS:
+                    cells.append(ui.tags.td(_fmt(data.get(s))))
+                return ui.tags.tr(*cells, class_="subtotal-row")
+
+            rows.append(subtotal_row("Sub total (producción)", "tn", sub_prod))
+            rows.append(subtotal_row("Sub total (ganancia)", "miles $", sub_gan))
+            if bloque_key == "nuevos_terceros":
+                rows.append(
+                    subtotal_row("Sub total (ganancia plantines)", "miles $", sub_plant)
+                )
+
+            bloque_cards.append(
+                ui.div(
+                    ui.tags.p(ui.tags.strong(bloque_label)),
+                    ui.tags.table(
+                        ui.tags.tbody(*rows),
+                        class_="hf-table",
+                    ),
+                    style="margin-bottom:16px;",
+                )
+            )
+
+        return ui.div(selector, *bloque_cards)
+
+    # -----------------------------------------------------------------------
+    # Debounce: recoger cambios de inputs de ha
+    # -----------------------------------------------------------------------
+
+    @reactive.effect
+    def _collect_ha() -> None:
+        """Captura todos los valores de ha para la variedad activa."""
+        state = state_fn()
+        if not state or not state.varieties:
+            return
+
+        variety_names = [v.name for v in state.varieties]
+        try:
+            sel_variety = input.variety_filter()
+        except Exception:
+            sel_variety = variety_names[0] if variety_names else ""
+        if not sel_variety or sel_variety not in variety_names:
+            sel_variety = variety_names[0] if variety_names else ""
+        if not sel_variety:
+            return
+
+        vals: dict[tuple[str, str, str], float] = {}
+        for bloque_key, (_, subproyectos) in _BLOQUE_META.items():
+            for sub in subproyectos:
+                for s in ALL_SEASONS:
+                    iid = _ha_id(bloque_key, sub, s)
+                    try:
+                        v = getattr(input, iid)()
+                        vals[(bloque_key, sub, s)] = float(v or 0)
+                    except Exception:
+                        pass
+
+        _pending.set(
+            {"vals": vals, "variety": sel_variety, "t": time.monotonic()}
+        )
+
+    @reactive.effect
+    def _debounced_flush() -> None:
+        """Persiste cuando los valores llevan >= 1.5 s sin cambios."""
+        reactive.invalidate_later(1.5)
+        p = _pending.get()
+        if not p:
+            return
+        if time.monotonic() - p["t"] < 1.45:
+            return
+
+        last = _last_saved.get()
+        if last and last.get("vals") == p["vals"] and last.get("variety") == p["variety"]:
+            return
+
+        sid = scenario_id_rv.get()
+        variety = p["variety"]
+        saved_count = 0
+        for (bloque_key, sub, season), ha in p["vals"].items():
+            try:
+                cell = NewProjectCell(
+                    bloque=BloqueKind(bloque_key),
+                    sub_proyecto=sub,
+                    variety_name=variety,
+                    season=season,  # type: ignore[arg-type]
+                    hectareas=ha,
+                )
+                upsert_ha_cell(sid, cell)
+                saved_count += 1
+            except Exception:
+                pass
+
+        if saved_count > 0:
+            _last_saved.set({"vals": p["vals"], "variety": variety})
+            reload_fn()
