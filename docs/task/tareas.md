@@ -314,12 +314,12 @@
 
 ---
 
-### [/] T1.1 — Enums y tipos primitivos
+### [X] T1.1 — Enums y tipos primitivos
 
 - **Objetivo:** vocabulario común tipado.
 - **AC:** importar `Productor, BloqueKind, SeasonCode, PlantYear` desde otro módulo sin errores mypy.
 
-#### [/] A1.1.1 — `backend/domain/enums.py`
+#### [X] A1.1.1 — `backend/domain/enums.py`
 
 - **Input:** N/A.
 - **Output:** archivo con `Productor`, `BloqueKind`, `SeasonCode`, `PlantYear`.
