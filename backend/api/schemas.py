@@ -10,7 +10,6 @@ from pydantic import BaseModel, Field
 from backend.domain.enums import BloqueKind
 from backend.domain.inputs import SeasonCode
 
-
 # ---------------------------------------------------------------------------
 # Scenarios
 # ---------------------------------------------------------------------------
