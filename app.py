@@ -30,7 +30,9 @@ async def lifespan(app: Starlette) -> AsyncIterator[None]:
         from backend.settings import settings
 
         engine = make_engine(settings.database_url)
-        Base.metadata.create_all(engine)
+        # create_all solo para SQLite dev; en Postgres/Supabase el schema lo gestiona Alembic
+        if settings.database_url.startswith("sqlite"):
+            Base.metadata.create_all(engine)
         app.state.engine = engine
         app.state.SessionLocal = make_session_factory(engine)
 
