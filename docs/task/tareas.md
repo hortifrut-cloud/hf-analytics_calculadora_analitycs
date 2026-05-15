@@ -37,7 +37,7 @@
 
 ---
 
-## [ ] Fase 0 — Setup del repositorio y herramientas
+## [X] Fase 0 — Setup del repositorio y herramientas
 
 - **Objetivo:** monorepo navegable con tooling reproducible (uv, pnpm, ruff, pre-commit, Astro skeleton, Starlette+Shiny “hello world”).
 - **AC global de la Fase:**
@@ -49,12 +49,12 @@
 
 ---
 
-### [ ] T0.1 — Inicializar `pyproject.toml` con `uv`
+### [X] T0.1 — Inicializar `pyproject.toml` con `uv`
 
 - **Objetivo:** dejar el entorno Python listo y bloqueado.
 - **AC:** `uv sync` instala sin errores; `uv.lock` commiteado; `python -c "import starlette, shiny, sqlalchemy, pandas, numpy"` no falla.
 
-#### [ ] A0.1.1 — Crear proyecto uv y dependencias runtime
+#### [X] A0.1.1 — Crear proyecto uv y dependencias runtime
 
 - **Objetivo:** inicializar el `pyproject.toml` con dependencias de producción.
 - **Input:** repo vacío (o con docs/ existente), Python ≥ 3.11 instalado.
@@ -73,7 +73,7 @@
 - **Tests:** `uv run python -c "import starlette, shiny, sqlalchemy, pandas, numpy, psycopg, xlsxwriter; print('ok')"`
 - **AC:** comando anterior imprime `ok` sin warnings.
 
-#### [ ] A0.1.2 — Agregar dependencias de desarrollo
+#### [X] A0.1.2 — Agregar dependencias de desarrollo
 
 - **Objetivo:** habilitar testing/lint/typing.
 - **Input:** A0.1.1 hecho.
@@ -87,7 +87,7 @@
 - **Tests:** `uv run pytest --version`, `uv run ruff --version`, `uv run mypy --version`.
 - **AC:** todos imprimen versión.
 
-#### [ ] A0.1.3 — Verificar reproducibilidad
+#### [X] A0.1.3 — Verificar reproducibilidad
 
 - **Objetivo:** asegurar que un clon nuevo funcione.
 - **Input:** `uv.lock` commiteado.
@@ -98,12 +98,12 @@
 
 ---
 
-### [ ] T0.2 — Configurar `ruff`, `black`, `mypy`, `pre-commit`
+### [X] T0.2 — Configurar `ruff`, `black`, `mypy`, `pre-commit`
 
 - **Objetivo:** estandarizar formato, lints y tipos antes de escribir lógica.
 - **AC:** `uv run pre-commit run -a` pasa sobre el repo recién creado.
 
-#### [ ] A0.2.1 — Configurar ruff y black en `pyproject.toml`
+#### [X] A0.2.1 — Configurar ruff y black en `pyproject.toml`
 
 - **Objetivo:** reglas únicas, line-length 100.
 - **Input:** `pyproject.toml` de A0.1.1.
@@ -122,7 +122,7 @@
 - **Tests:** `uv run ruff check .` y `uv run black --check .` pasan.
 - **AC:** sin errores ni warnings.
 
-#### [ ] A0.2.2 — Configurar mypy estricto
+#### [X] A0.2.2 — Configurar mypy estricto
 
 - **Objetivo:** tipado estricto desde el día 1.
 - **Output:** `[tool.mypy]` en `pyproject.toml`.
@@ -137,7 +137,7 @@
 - **Tests:** `uv run mypy backend/` (cuando exista) corre sin errores.
 - **AC:** primera ejecución limpia (módulos vacíos).
 
-#### [ ] A0.2.3 — pre-commit hooks
+#### [X] A0.2.3 — pre-commit hooks
 
 - **Objetivo:** evitar commits sucios.
 - **Output:** `.pre-commit-config.yaml`.
@@ -147,25 +147,25 @@
 
 ---
 
-### [ ] T0.3 — Inicializar frontend Astro con `pnpm`
+### [X] T0.3 — Inicializar frontend Astro con `pnpm`
 
 - **Objetivo:** dejar `frontend/` listo para construir como SPA estática.
 - **AC:** `cd frontend && pnpm run build` produce `dist/` con HTML cuyo CSS está inline.
 
-#### [ ] A0.3.1 — Habilitar `pnpm` vía corepack
+#### [X] A0.3.1 — Habilitar `pnpm` vía corepack
 
 - **Proceso:** `corepack enable && corepack prepare pnpm@latest --activate`.
 - **Tests:** `pnpm --version` imprime versión.
 - **AC:** ≥ 9.0.
 
-#### [ ] A0.3.2 — Crear plantilla Astro
+#### [X] A0.3.2 — Crear plantilla Astro
 
 - **Proceso:** `pnpm create astro@latest frontend` → Empty project, TypeScript Strict, **NO** instalar deps.
 - Después: `cd frontend && pnpm install && pnpm approve-builds`.
 - **Tests:** `pnpm run dev` levanta `localhost:4321`.
 - **AC:** página por defecto carga.
 
-#### [ ] A0.3.3 — Configurar `astro.config.mjs` para SPA + ShinyApps.io
+#### [X] A0.3.3 — Configurar `astro.config.mjs` para SPA + ShinyApps.io
 
 - **Objetivo:** evitar rutas absolutas `/_astro/...` que rompen en ShinyApps.io.
 - **Proceso:**
@@ -188,7 +188,7 @@
 - **Tests:** `pnpm run build` y verificar que `dist/index.html` tenga `<style>` inline.
 - **AC:** no quedan referencias a `/_astro/*.css` como `<link rel="stylesheet">`.
 
-#### [ ] A0.3.4 — Instalar Tailwind y tokens
+#### [X] A0.3.4 — Instalar Tailwind y tokens
 
 - **Proceso:** `pnpm dlx astro add tailwind`; configurar `tailwind.config.cjs` con
   ```js
@@ -199,23 +199,23 @@
 
 ---
 
-### [ ] T0.4 — `.gitignore`, `.rscignore`, `.env.example`, `docker-compose.yml`
+### [X] T0.4 — `.gitignore`, `.rscignore`, `.env.example`, `docker-compose.yml`
 
 - **Objetivo:** archivos de configuración del repo.
 - **AC:** `cp .env.example .env` permite arrancar el proyecto sin errores.
 
-#### [ ] A0.4.1 — Actualizar `.gitignore`
+#### [X] A0.4.1 — Actualizar `.gitignore`
 
 - **Proceso:** añadir `backend/static/`, `frontend/dist/`, `frontend/node_modules/`, `var/*.db`, `.venv/`.
 - **AC:** `git status` ignora estos paths.
 
-#### [ ] A0.4.2 — Crear `.rscignore`
+#### [X] A0.4.2 — Crear `.rscignore`
 
 - **Proceso:** copiar y adaptar el bloque de `plan_replication.md` §5 (excluye `frontend/`, `node_modules/`, `notebooks/`, `docs/`, `tests/`, `scripts/`, `.venv/`).
 - **Tests:** `rsconnect deploy --dry-run` (cuando exista cuenta) no incluye esos paths.
 - **AC:** archivo presente, sintaxis válida (líneas no comentadas no contienen espacios extra).
 
-#### [ ] A0.4.3 — `.env.example`
+#### [X] A0.4.3 — `.env.example`
 
 - **Objetivo:** plantilla de variables de entorno.
 - **Proceso:**
@@ -243,12 +243,12 @@
 
 ---
 
-### [ ] T0.5 — `scripts/dev.ps1`
+### [X] T0.5 — `scripts/dev.ps1`
 
 - **Objetivo:** arranque dev en un solo comando.
 - **AC:** `./scripts/dev.ps1` levanta backend en `:8000` y Astro en `:4321`.
 
-#### [ ] A0.5.1 — Script PowerShell con 2 terminales
+#### [X] A0.5.1 — Script PowerShell con 2 terminales
 
 - **Input:** `app.py` ya creado (A0.6.x).
 - **Proceso:** usar `Start-Process powershell -ArgumentList ...` para abrir dos ventanas: una con `uv run uvicorn app:app --reload --port 8000 --reload-exclude ".venv"`, otra con `cd frontend; pnpm run dev`.
@@ -257,12 +257,12 @@
 
 ---
 
-### [ ] T0.6 — Esqueleto `app.py` + Shiny “Hello”
+### [X] T0.6 — Esqueleto `app.py` + Shiny “Hello”
 
 - **Objetivo:** ASGI mount mínimo funcionando.
 - **AC:** `localhost:8000/shiny/` muestra `Hello`.
 
-#### [ ] A0.6.1 — Shiny mínimo en `backend/shiny_app/app.py`
+#### [X] A0.6.1 — Shiny mínimo en `backend/shiny_app/app.py`
 
 - **Proceso:**
   ```python
@@ -273,7 +273,7 @@
   ```
 - **AC:** `uv run python -m shiny run backend/shiny_app/app.py` muestra la página.
 
-#### [ ] A0.6.2 — Entrypoint `app.py` raíz (Starlette + mounts)
+#### [X] A0.6.2 — Entrypoint `app.py` raíz (Starlette + mounts)
 
 - **Proceso:**
   ```python
@@ -296,14 +296,14 @@
 - **Tests:** `curl localhost:8000/api/status` → `{"status":"ok"}`; `curl localhost:8000/shiny/` → HTML.
 - **AC:** los 3 mounts responden.
 
-#### [ ] A0.6.3 — `backend/main.py` para dev
+#### [X] A0.6.3 — `backend/main.py` para dev
 
 - **Proceso:** alias delgado que re-exporta `app` desde `app.py` para `uvicorn backend.main:app` (no usado en prod).
 - **AC:** comando alternativo de dev funciona.
 
 ---
 
-## [ ] Fase 1 — Modelo de dominio puro
+## [/] Fase 1 — Modelo de dominio puro
 
 - **Objetivo:** clases Pydantic inmutables para `ScenarioState` y `DerivedState`. Frontera limpia entre DB ↔ motor ↔ UI.
 - **AC global:**
@@ -314,12 +314,12 @@
 
 ---
 
-### [ ] T1.1 — Enums y tipos primitivos
+### [/] T1.1 — Enums y tipos primitivos
 
 - **Objetivo:** vocabulario común tipado.
 - **AC:** importar `Productor, BloqueKind, SeasonCode, PlantYear` desde otro módulo sin errores mypy.
 
-#### [ ] A1.1.1 — `backend/domain/enums.py`
+#### [/] A1.1.1 — `backend/domain/enums.py`
 
 - **Input:** N/A.
 - **Output:** archivo con `Productor`, `BloqueKind`, `SeasonCode`, `PlantYear`.
