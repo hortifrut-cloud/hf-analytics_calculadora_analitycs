@@ -199,21 +199,13 @@ Get-Content .env | ForEach-Object {
 }
 
 # Registrar cuenta
-uv run python -c "from rsconnect.main import cli; cli()" add `
-    --account $env:rsconnect_usuario `
-    --name $env:rsconnect_name `
-    --token $env:rsconnect_token `
-    --secret $env:rsconnect_secret
+uv run python -c "from rsconnect.main import cli; cli()" add --account $env:rsconnect_usuario --name $env:rsconnect_name --token $env:rsconnect_token --secret $env:rsconnect_secret
 ```
 
 ### 5.3 Primer despliegue
 
 ```powershell
-uv run python -c "from rsconnect.main import cli; cli()" deploy shiny . `
-    --entrypoint app:app `
-    --name $env:rsconnect_usuario `
-    --title "calculadora_analitycs" `
-    --new
+uv run python -c "from rsconnect.main import cli; cli()" deploy shiny . --entrypoint app:app --name $env:rsconnect_usuario --title "calculadora_analitycs" --new
 ```
 
 > **Nota:** el entrypoint es `app:app` (Starlette), no FastAPI — ShinyApps.io no soporta
@@ -225,10 +217,7 @@ Una vez desplegada, anotar el `app-id` que aparece en el dashboard de ShinyApps.
 
 ```powershell
 # APP_ID: <registrar aquí el ID después del primer deploy>
-uv run python -c "from rsconnect.main import cli; cli()" deploy shiny . `
-    --entrypoint app:app `
-    --name $env:rsconnect_usuario `
-    --app-id <APP_ID>
+uv run python -c "from rsconnect.main import cli; cli()" deploy shiny . --entrypoint app:app --name $env:rsconnect_usuario --app-id <APP_ID>
 ```
 
 > El `app-id` aparece en la URL del dashboard de ShinyApps.io y también en la salida

@@ -5,6 +5,7 @@ notebooks/
 docs/
 tests/
 scripts/
+scratch/
 .venv/
 .git/
 .claude/

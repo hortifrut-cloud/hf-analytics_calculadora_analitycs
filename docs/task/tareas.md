@@ -1542,3 +1542,81 @@
 
 - **Proceso:** Actualizar `ejecucion.md` §3.2 y `scripts/dev.ps1` con `--reload-exclude ".venv" --reload-exclude "scratch" --reload-exclude "docs" --reload-exclude "tests" --reload-exclude "frontend"`.
 - **AC:** Modificar `scratch/seed_db.py` no provoca restart del servidor.
+
+---
+
+## [X] Fase 12 — Mejoras de UX: Sección Colapsable y KPI Deltas
+
+**Objetivo:** Mejorar la experiencia de usuario con (1) un botón para ocultar la Sección 1 y ganar espacio vertical, y (2) badges de variación (▲/▼) en los sub-totales de Secciones 4 y 5 que muestran el impacto inmediato de cambiar las Reglas (Sección 3).
+
+- **AC global:**
+  - Sección 1 se pliega y expande sin perder el estado de "Base confirmada".
+  - Al hacer clic en "Guardar Reglas", los sub-totales de Sec. 4 y la tabla de Sec. 5 muestran badges `▲ N` (verde) o `▼ N` (rojo) con la diferencia respecto al estado previo.
+  - Los deltas desaparecen si el valor no cambió (diferencia < 0.5).
+  - Sin cambios en la lógica de cálculo ni en la base de datos.
+
+---
+
+### [X] T12.1 — Sección 1 colapsable
+
+**Objetivo:** Agregar un botón "Ocultar ▲ / Mostrar ▼" en la cabecera de la Sección 1 para que el usuario pueda ganar espacio vertical sin recargar la página.
+
+#### [X] A12.1.1 — Refactorizar `base_table_ui` con header dinámico
+
+- **Objetivo:** Separar el header de sección del contenido para poder renderizar el botón reactivamente.
+- **Input:** `backend/shiny_app/modules/base_table.py`.
+- **Output:** `base_table_ui` usa `output_ui("base_table_header")` + `output_ui("base_table_content")`.
+- **Proceso:**
+  - Reemplazar `ui.tags.span(...)` estático por `ui.output_ui("base_table_header")`.
+  - Agregar `_collapsed: reactive.Value[bool] = reactive.value(False)` al servidor.
+  - `base_table_header` renderiza el título + botón con label dinámico ("Ocultar ▲" / "Mostrar ▼") usando clase `btn-collapse`.
+  - `base_table_content` retorna `ui.div()` vacío cuando `_collapsed.get()` es `True`.
+  - `_on_toggle` efecto que invierte `_collapsed` al clic.
+  - CSS: `.section-header` (flex, space-between) + `.btn-collapse` (ghost button con hover verde).
+- **Referencia:** `styles.css` clases `.section-header`, `.btn-collapse`.
+- **Tests:** Manual — verificar que el estado de "Base confirmada" persiste tras plegar y expandir.
+- **AC:** El contenido de la sección desaparece al hacer clic en "Ocultar" y reaparece al hacer clic en "Mostrar". El estado de confirmación no se pierde. **COMPLETADO 15/05/2026.**
+
+---
+
+### [X] T12.2 — KPI deltas en sub-totales de Secciones 4 y 5
+
+**Objetivo:** Mostrar badges de variación (▲/▼ + diferencia) junto a los sub-totales de Secciones 4 y 5, activados por el botón "Guardar Reglas" de Sección 3. El delta compara el derived recién calculado contra un snapshot capturado justo antes del guardado.
+
+#### [X] A12.2.1 — Mecanismo de snapshot en `app.py`
+
+- **Objetivo:** Capturar `current_derived()` antes de que el guardado de reglas invalide el caché y dispare el recálculo.
+- **Input:** `backend/shiny_app/app.py`, `backend/shiny_app/modules/rules_panel.py`.
+- **Output:** `reactive.Value[dict | None]` de nombre `_snapshot_derived`; funciones `capture_snapshot()` y `get_snapshot()` en el server de `app.py`; parámetro `snapshot_fn: Callable` en `rules_panel_server`.
+- **Proceso:**
+  - `app.py` server: añadir `_snapshot_derived: reactive.Value[dict | None] = reactive.value(None)`, `capture_snapshot()` que llama `_snapshot_derived.set(current_derived())`, y `get_snapshot()` que retorna `_snapshot_derived.get()`.
+  - `rules_panel_server`: aceptar `snapshot_fn: Callable`; en `_on_save()`, llamar `snapshot_fn()` ANTES de `save_rules()` y `reload_fn()`.
+  - Orden en `_on_save`: `snapshot_fn()` → `save_rules(sid, rules)` → `reload_fn()`.
+- **Lógica:** El snapshot fija el derived con las reglas antiguas. Tras el reload, `current_derived()` tiene las reglas nuevas. La diferencia es el impacto de las reglas sobre la producción/ganancia.
+- **Tests:** Manual — guardar reglas con Royaltie FOB distinto; verificar que los badges aparecen con el delta correcto.
+- **AC:** `_snapshot_derived` contiene el derived PRE-guardado; badges calculan delta correcto. **COMPLETADO 15/05/2026.**
+
+#### [X] A12.2.2 — Badges delta en sub-totales de Sección 4
+
+- **Objetivo:** Reemplazar las celdas planas de sub-totales en `new_projects.py` por celdas con badge de delta opcional.
+- **Input:** `backend/shiny_app/modules/new_projects.py`.
+- **Output:** Helper `_delta_cell(val, prev_val) -> ui.Tag`; `new_projects_server` acepta `prev_derived_fn: Callable`; `subtotal_row` usa `_delta_cell`.
+- **Proceso:**
+  - Añadir `_delta_cell` a nivel de módulo: extrae los valores float, calcula delta, si `abs(delta) >= 0.5` renderiza `ui.div` con `ui.tags.span(formatted)` + `ui.tags.span(f"▲/▼ {abs(delta):,.0f}", class_="delta-badge delta-up/down")` dentro de un div con clase `delta-cell`.
+  - `new_projects_content`: obtener `prev_derived = prev_derived_fn()`; calcular `prev_sub_prod`, `prev_sub_gan`, `prev_sub_plant` desde `prev_derived` para el bloque y variedad activos.
+  - `subtotal_row` acepta `prev_data: dict` y usa `_delta_cell` por celda.
+- **Referencia:** `styles.css` clases `.delta-cell`, `.delta-badge`, `.delta-up`, `.delta-down`.
+- **Tests:** Manual — cambiar Royaltie FOB y guardar; sub-totales de ganancia deben mostrar delta.
+- **AC:** Solo aparecen deltas en sub-totales (no en filas de ha). Delta correcto para cada bloque y variedad activa. **COMPLETADO 15/05/2026.**
+
+#### [X] A12.2.3 — Badges delta en filas de Sección 5
+
+- **Objetivo:** Mismo patrón en `totals.py` para las 4 filas de totales (HF fruta, HF ganancia, Terceros fruta, Terceros ganancia).
+- **Input:** `backend/shiny_app/modules/totals.py`.
+- **Output:** `_delta_cell` helper; `totals_server` acepta `prev_derived_fn: Callable`; `row()` usa `_delta_cell`.
+- **Proceso:**
+  - Añadir `_delta_cell` idéntico al de `new_projects.py`.
+  - `totals_server` acepta `prev_derived_fn: Callable`; en `totals_table`, obtener `prev_derived = prev_derived_fn()`; extraer `prev_totales = prev_derived.get("totales", {})` y los 4 sub-dicts de prev.
+  - `row(label, unit, data, prev_data)` usa `_delta_cell` para cada temporada.
+- **Tests:** Manual — guardar reglas; verificar delta en "Total fruta" y "Ganancia" de ambas categorías.
+- **AC:** Los 4 totales muestran badges cuando cambian. Sin delta si la variación es 0 o no hay snapshot. **COMPLETADO 15/05/2026.**
