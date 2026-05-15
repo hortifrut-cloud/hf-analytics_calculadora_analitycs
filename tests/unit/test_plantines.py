@@ -1,4 +1,29 @@
-"""Tests unitarios — backend/logic/plantines.py (T2.7)."""
+"""
+Archivo: test_plantines.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para la lógica de financiamiento de plantines (T2.7).
+Valida el cálculo de las cuotas de amortización para productores externos,
+asegurando que se apliquen correctamente los años de financiamiento y la
+tasa de interés, además de verificar el enmascaramiento temporal de los
+pagos.
+
+Acciones Principales:
+    - Validación de la fórmula de amortización francesa (`cuota_amortizacion`).
+    - Verificación del cálculo de ingresos por plantines por temporada.
+    - Validación de la máscara de truncamiento (n > años de financiamiento).
+    - Comprobación de que B1 y B2 no generen ingresos por este concepto.
+
+Estructura Interna:
+    - `test_cuota_amortizacion_*`: Verifica la matemática financiera base.
+    - `test_plantines_año1_*`: Verifica el flujo de caja por temporada.
+    - `test_mascara_financiamiento_*`: Verifica el límite de años de cobro.
+
+Ejecución:
+    pytest tests/unit/test_plantines.py
+"""
 
 import pytest
 

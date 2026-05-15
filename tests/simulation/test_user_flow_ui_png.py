@@ -1,4 +1,31 @@
-"""Simulation test — recompute(scenario_ui_png) reproduce UI.png totales (T2.10)."""
+"""
+Archivo: test_user_flow_ui_png.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Test de simulación de flujo de negocio (T2.10). Recrea el proceso de
+cálculo completo para el escenario canónico "UI.png" y valida que los
+totales de producción (fruta) y financieros (ganancia) coincidan
+exactamente con los valores esperados definidos en los requerimientos.
+
+Acciones Principales:
+    - Validación de los subtotales de fruta para el bloque Hortifrut.
+    - Validación de la ganancia neta consolidada por temporada.
+    - Validación de los resultados de terceros (fruta y ganancia).
+    - Verificación del determinismo del motor de cálculos consolidado.
+
+Estructura Interna:
+    - `test_hf_fruta`: Aserción contra valores golden de producción HF.
+    - `test_hf_ganancia`: Aserción contra valores financieros HF.
+    - `test_deterministic`: Asegura consistencia en ejecuciones repetidas.
+
+Entradas / Dependencias:
+    - `scenario_ui_png`: Fixture del escenario canónico definida en conftest.
+
+Ejecución:
+    pytest tests/simulation/test_user_flow_ui_png.py
+"""
 
 import json
 

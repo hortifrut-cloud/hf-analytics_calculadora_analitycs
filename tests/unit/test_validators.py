@@ -1,3 +1,30 @@
+"""
+Archivo: test_validators.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para los validadores personalizados de Pydantic (A1.4).
+Asegura que el modelo `ScenarioState` mantenga la integridad referencial
+entre las celdas de proyecto y las variedades definidas, además de
+validar los rangos temporales y emitir alertas ante subproyectos no
+reconocidos.
+
+Acciones Principales:
+    - Validación de existencia de variedades referenciadas en las celdas.
+    - Verificación de que las temporadas estén dentro del horizonte T26-T32.
+    - Captura y validación de logs de advertencia para nuevos subproyectos.
+    - Comprobación de que celdas válidas no disparen excepciones.
+
+Estructura Interna:
+    - `test_unknown_variety_name_fails`: Valida integridad referencial.
+    - `test_invalid_season_fails`: Valida el rango cronológico.
+    - `test_unknown_subproyecto_*_warning`: Verifica auditoría de nombres.
+
+Ejecución:
+    pytest tests/unit/test_validators.py
+"""
+
 import logging
 
 import pytest

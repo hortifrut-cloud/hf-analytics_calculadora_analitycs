@@ -1,3 +1,28 @@
+"""
+Archivo: test_enums.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para las enumeraciones y constantes del dominio (A1.1).
+Asegura que los valores de los enums y el orden de las temporadas se
+mantengan consistentes, evitando cambios accidentales que puedan romper
+la lógica del motor o la persistencia en base de datos.
+
+Acciones Principales:
+    - Validación de los valores literales del enum `Productor`.
+    - Validación de los valores literales del enum `BloqueKind`.
+    - Verificación de la secuencia cronológica de `ALL_SEASONS`.
+    - Comprobación de que los enums se comporten como strings (*StrEnum*).
+
+Estructura Interna:
+    - `test_productor_values`: Verifica claves de negocio.
+    - `test_all_seasons_order`: Garantiza el orden T2627 -> T3132.
+
+Ejecución:
+    pytest tests/unit/test_enums.py
+"""
+
 from backend.domain.enums import ALL_SEASONS, BloqueKind, Productor
 
 

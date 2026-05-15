@@ -1,4 +1,29 @@
-"""Tests unitarios — backend/logic/recambio.py (T2.5)."""
+"""
+Archivo: test_recambio.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para la lógica del Bloque 2: Recambio Varietal (T2.5).
+Valida que la sustitución de hectáreas existentes por nuevas variedades
+se calcule correctamente, asegurando que la producción y ganancia
+proyectadas respeten el ciclo de vida de la planta y el desfase de
+cosecha.
+
+Acciones Principales:
+    - Validación de la producción incremental tras el recambio (imagen 8).
+    - Verificación de la ganancia FOB generada por las nuevas hectáreas.
+    - Validación de la invariante de temporada 0 (T2627) en cero.
+    - Comprobación del aislamiento frente a bloques de crecimiento (B1).
+
+Estructura Interna:
+    - `test_prod_año1_*`: Verifica el rendimiento del primer año de recambio.
+    - `test_gan_año2_*`: Verifica los ingresos en la madurez temprana.
+    - `test_b1_cells_ignored`: Garantiza que B2 no se contamine con B1.
+
+Ejecución:
+    pytest tests/unit/test_recambio.py
+"""
 
 import pytest
 

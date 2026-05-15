@@ -1248,16 +1248,16 @@
 
 ---
 
-## [ ] Fase 9 — Documentación
+## [X] Fase 9 — Documentación
 
 - **Objetivo:** README + ejecucion.md raíz que permitan a un dev nuevo levantar y desplegar.
 - **AC global:** dev nuevo levanta dev en < 15 min y despliega a ShinyApps.io en < 1 h.
 
 ---
 
-### [ ] T9.1 — `README.md` raíz
+### [X] T9.1 — `README.md` raíz
 
-#### [ ] A9.1.1 — Contenido ejecutivo
+#### [X] A9.1.1 — Contenido ejecutivo
 
 - **Secciones:**
   - Qué hace (link a `description_proyecto.md`).
@@ -1269,9 +1269,9 @@
 
 ---
 
-### [ ] T9.2 — `ejecucion.md` raíz
+### [X] T9.2 — `ejecucion.md` raíz
 
-#### [ ] A9.2.1 — Réplica de `docs/doc_guia/ejecucion.md` adaptada
+#### [X] A9.2.1 — Réplica de `docs/doc_guia/ejecucion.md` adaptada
 
 - **Secciones (siguiendo plantilla):**
   - §1 Requisitos previos.
@@ -1285,12 +1285,21 @@
 
 ---
 
-### [ ] T9.3 — Diagramas
+### [X] T9.3 — Diagramas
 
-#### [ ] A9.3.1 — Render Mermaid → SVG
+#### [X] A9.3.1 — Render Mermaid → SVG
 
 - **Proceso:** exportar el diagrama de `description_proyecto.md` §1.2 a `docs/diagrams/flujo_reactivo.svg`. Agregar diagrama de despliegue.
 - **AC:** SVGs renderizan en GitHub web.
+
+---
+
+### [X] T9.4 — Estandarización de Documentación de Código
+
+#### [X] A9.4.1 — Docstrings en Suite de Tests (SKILL.md)
+
+- **Objetivo:** Profesionalizar la documentación técnica de la suite de pruebas siguiendo los estándares de arquitectura del proyecto.
+- **AC:** 100% de los archivos `.py` en `tests/` cuentan con encabezados de módulo, descripción de acciones principales y ejemplos de ejecución en formato Google Style (Español).
 
 ---
 

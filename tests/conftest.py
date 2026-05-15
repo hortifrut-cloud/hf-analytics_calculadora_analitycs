@@ -1,9 +1,32 @@
-"""Fixtures compartidas para tests de Fase 2.
+"""
+Archivo: conftest.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-CSV golden files: docs/image/imagen{1,7,8,9,10}.csv
-Escenario canónico UI.png construido desde literales Python validados contra los CSVs.
+Descripción:
+Orquestador de fixtures globales para la suite de pruebas de la Fase 2.
+Centraliza la lógica de carga de "Golden Masters" desde archivos CSV y
+la construcción del escenario canónico "UI.png". Este archivo asegura que
+todos los tests (unitarios, de integración y E2E) operen sobre una base
+de datos de referencia consistente y validada.
 
-Nota: imagen8 OLMOS está en T2627=50 (no T2728 — el CSV es fuente de verdad).
+Acciones Principales:
+    - Carga y parseo de archivos CSV históricos (`imagen1..10.csv`).
+    - Definición del `scenario_ui_png` como objeto `ScenarioState` inmutable.
+    - Exposición de subtotales "golden" para validaciones matemáticas.
+    - Gestión de rutas relativas a la documentación técnica del proyecto.
+
+Estructura Interna:
+    - `scenario_ui_png`: Fixture de sesión que entrega el escenario maestro.
+    - `base_table_imagen1`: Fixture que parsea la tabla base de Trujillo/Olmos.
+    - `golden_imagenX`: Conjunto de fixtures que exponen valores de referencia.
+
+Entradas / Dependencias:
+    - `docs/image/*.csv`: Archivos de referencia de negocio.
+
+Ejemplo de Integración:
+    def test_logic(scenario_ui_png):
+        assert scenario_ui_png.name == "UI.png demo"
 """
 
 from pathlib import Path

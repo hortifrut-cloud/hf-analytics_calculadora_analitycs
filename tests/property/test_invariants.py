@@ -1,6 +1,32 @@
-"""Property-based tests — invariantes del motor (T2.11).
+"""
+Archivo: test_invariants.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Hypothesis max_examples=200; sin contraejemplos = AC cumplido.
+Descripción:
+Suite de pruebas basadas en propiedades (*Property-based testing*) para el
+motor de cálculos (T2.11). Utiliza la librería Hypothesis para generar
+cientos de escenarios aleatorios y validar que el motor cumpla con los
+invariantes matemáticos y de negocio definidos, asegurando la robustez
+frente a casos de borde.
+
+Sustentación Científica:
+MacIver, D. R. (2015). Hypothesis: A new approach to property-based testing.
+
+Acciones Principales:
+    - Validación de no-negatividad en todos los resultados (producción/dinero).
+    - Verificación del lag obligatorio en la primera temporada (T2627).
+    - Comprobación del enmascaramiento de plantines según años de financiamiento.
+    - Validación del determinismo del motor ante entradas idénticas.
+
+Estructura Interna:
+    - `variety_strategy`: Generador aleatorio de curvas de producción.
+    - `scenario_strategy`: Generador de estados de escenario completos.
+    - `test_crecimiento_non_negative`: Invariante de positividad.
+    - `test_recompute_deterministic`: Invariante de consistencia.
+
+Ejecución:
+    pytest tests/property/test_invariants.py
 """
 
 import pytest

@@ -1,4 +1,28 @@
-"""Verifica que los fixtures de conftest.py se construyen correctamente."""
+"""
+Archivo: test_fixtures.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Pruebas de integridad para los fixtures globales de la suite (A2.1).
+Verifica que el orquestador `conftest.py` cargue correctamente los
+archivos maestros (Golden Masters) y construya el escenario "UI.png" con
+los valores exactos requeridos por las especificaciones de negocio.
+
+Acciones Principales:
+    - Validación de la carga de `BaseTable` desde Trujillo/Olmos.
+    - Verificación de la estructura del escenario maestro `UI.png`.
+    - Validación de los subtotales "Golden" para las imágenes 7 a 10.
+    - Comprobación de que las rutas a los CSVs sean válidas.
+
+Estructura Interna:
+    - `test_base_table_*`: Verifica la tabla base histórica.
+    - `test_scenario_ui_png_builds`: Verifica el escenario de referencia.
+    - `test_golden_imagenX_subtotals`: Verifica los valores maestros.
+
+Ejecución:
+    pytest tests/unit/test_fixtures.py
+"""
 
 from tests.conftest import ScenarioState
 

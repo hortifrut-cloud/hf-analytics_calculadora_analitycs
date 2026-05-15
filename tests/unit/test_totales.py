@@ -1,4 +1,29 @@
-"""Tests unitarios — backend/logic/totales.py (T2.9)."""
+"""
+Archivo: test_totales.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para la lógica de agregación final de resultados (T2.9).
+Valida la consolidación de los tres bloques productivos y el
+financiamiento de plantines en los indicadores globales del escenario,
+asegurando que se mantenga la separación estricta entre los resultados de
+Hortifrut y los de terceros.
+
+Acciones Principales:
+    - Validación de la suma de producción de todos los bloques para HF.
+    - Verificación de la consolidación de ganancias (incluyendo plantines).
+    - Validación de la independencia de los indicadores de terceros.
+    - Comprobación de integridad ante diccionarios de resultados vacíos.
+
+Estructura Interna:
+    - `test_hf_fruta_suma_b1_b2_b3`: Verifica la producción total de fruta.
+    - `test_hf_ganancia_incluye_plantines`: Verifica el margen total de HF.
+    - `test_terceros_separados`: Verifica que terceros no afecten métricas HF.
+
+Ejecución:
+    pytest tests/unit/test_totales.py
+"""
 
 import pytest
 

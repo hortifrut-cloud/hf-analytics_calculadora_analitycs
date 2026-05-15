@@ -1,4 +1,29 @@
-"""Tests unitarios — backend/logic/nuevos_terceros.py (T2.6)."""
+"""
+Archivo: test_nuevos_terceros.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para la lógica del Bloque 3: Nuevos Terceros (T2.6). Valida
+el proceso de agregación de hectáreas de productores externos (Talsa,
+Diamond Bridge) y el cálculo de la rentabilidad de Hortifrut por conceptos
+de comercialización y servicios, considerando las curvas de vida de la
+variedad.
+
+Acciones Principales:
+    - Validación de la agregación de hectáreas por múltiples productores.
+    - Verificación del cálculo de producción (miles de ton) por temporada.
+    - Validación de la ganancia FOB para Hortifrut (comisión + diferencial).
+    - Comprobación del aislamiento frente a bloques internos (B1, B2).
+
+Estructura Interna:
+    - `test_prod_año1_*`: Verifica la producción inicial de terceros.
+    - `test_gan_año1_*`: Verifica el ingreso de HF por servicios a terceros.
+    - `test_empty_cells_returns_zeros`: Asegura robustez ante entradas vacías.
+
+Ejecución:
+    pytest tests/unit/test_nuevos_terceros.py
+"""
 
 import pytest
 

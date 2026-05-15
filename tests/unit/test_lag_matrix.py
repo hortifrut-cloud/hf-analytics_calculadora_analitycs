@@ -1,3 +1,28 @@
+"""
+Archivo: test_lag_matrix.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para la lógica de desfase temporal y agregación de
+hectáreas (A2.3). Valida que las plantas se asignen correctamente a las
+temporadas de cosecha según su año de vida (lag matrix), asegurando que
+una siembra en T2627 sea productiva en T2728 (Año 1), T2829 (Año 2), etc.
+
+Acciones Principales:
+    - Validación del motor de desplazamiento temporal `build_lag_matrix`.
+    - Verificación de la agregación de hectáreas por bloque y variedad.
+    - Validación de límites de rango (temporadas fuera del horizonte).
+    - Comprobación del filtrado por tipo de bloque (B1, B2, B3).
+
+Estructura Interna:
+    - `test_lag_m*`: Verifica el posicionamiento de hectáreas en la matriz.
+    - `test_aggregate_ha_*`: Verifica la suma de celdas por temporada de siembra.
+
+Ejecución:
+    pytest tests/unit/test_lag_matrix.py
+"""
+
 from backend.domain.enums import ALL_SEASONS, BloqueKind
 from backend.domain.inputs import NewProjectCell
 from backend.logic.lag_matrix import aggregate_ha, build_lag_matrix

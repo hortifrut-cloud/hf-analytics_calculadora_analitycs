@@ -1,4 +1,28 @@
-"""Tests unitarios — backend/logic/terceros_totales.py (T2.8)."""
+"""
+Archivo: test_terceros_totales.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para la lógica de consolidación de terceros (T2.8).
+Valida la segregación entre la producción retenida por el tercero y la
+producción comercializada por Hortifrut, asegurando que los ingresos por
+ventas y servicios se calculen según el porcentaje de recaudación pactado.
+
+Acciones Principales:
+    - Validación de la producción neta de terceros (miles de ton).
+    - Verificación del cálculo de ingresos por comercialización externa.
+    - Validación de la invariante de producción cero en Año 1 (recaudación=1).
+    - Comprobación del aislamiento frente a bloques internos (B1, B2).
+
+Estructura Interna:
+    - `test_prod_año3_*`: Verifica el rendimiento consolidado de terceros.
+    - `test_gan_año1_*`: Verifica la comisión de venta de Hortifrut.
+    - `test_b1_b2_cells_ignored`: Garantiza que B3 sea independiente.
+
+Ejecución:
+    pytest tests/unit/test_terceros_totales.py
+"""
 
 import pytest
 

@@ -1,3 +1,29 @@
+"""
+Archivo: test_derived.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para los modelos de dominio derivados (A1.3). Valida la
+estructura de datos, serialización JSON y métodos de agregación de las
+clases que representan los resultados procesados del motor de cálculos,
+asegurando la integridad de los datos que se envían al frontend.
+
+Acciones Principales:
+    - Validación de la estructura `CalculosVariedadCell` y sus campos opcionales.
+    - Prueba de los métodos de agregación de `MatrizSubyacente` por temporada.
+    - Validación de la jerarquía de `Totales` y `Subtotales`.
+    - Comprobación de la serialización y deserialización de `DerivedState`.
+
+Estructura Interna:
+    - `test_calculos_variedad_*`: Verifica las celdas individuales de pre-cálculo.
+    - `test_matriz_subtotal_by_season`: Verifica la suma horizontal de matrices.
+    - `test_derived_state_roundtrip_json`: Asegura persistencia sin pérdida de tipos.
+
+Ejecución:
+    pytest tests/unit/test_derived.py
+"""
+
 import json
 
 from backend.domain.derived import (

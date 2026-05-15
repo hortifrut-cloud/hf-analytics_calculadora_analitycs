@@ -1,4 +1,29 @@
-"""Tests unitarios — backend/logic/crecimiento_hf.py (T2.4)."""
+"""
+Archivo: test_crecimiento_hf.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para la lógica del Bloque 1: Crecimiento HF (T2.4). Valida
+que la siembra de nuevas hectáreas por parte de Hortifrut se traduzca en
+la producción y ganancia esperada a lo largo de las temporadas,
+considerando el desfase temporal (*shift*) inherente al crecimiento de la
+planta.
+
+Acciones Principales:
+    - Validación de producción individual por proyecto (Chao, Olmos).
+    - Verificación de la agregación de múltiples siembras en una misma temporada.
+    - Validación de la invariante de temporada 0 (T2627) siempre en cero.
+    - Comprobación del aislamiento de celdas (ignorar bloques ajenos a B1).
+
+Estructura Interna:
+    - `test_prod_año1_*`: Verifica el primer año de cosecha tras la siembra.
+    - `test_prod_t2829_*`: Verifica la suma de plantas en diferentes edades.
+    - `test_b3_cells_ignored`: Garantiza que el bloque sea puro y no se contamine.
+
+Ejecución:
+    pytest tests/unit/test_crecimiento_hf.py
+"""
 
 import pytest
 

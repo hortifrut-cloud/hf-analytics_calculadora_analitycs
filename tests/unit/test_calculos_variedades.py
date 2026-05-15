@@ -1,3 +1,29 @@
+"""
+Archivo: test_calculos_variedades.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para la lógica de pre-cálculo de variedades (T2.2). Valida
+que las métricas base (producción y ganancia) para los bloques HFI, HFT y
+Terceros se calculen correctamente por cada año de vida de la planta,
+considerando densidades, productividades y porcentajes de recaudación.
+
+Acciones Principales:
+    - Validación de producción y ganancia interna (HFI).
+    - Validación de métricas para venta propia y productor en HFT.
+    - Validación de producción y ganancia para el bloque de Terceros.
+    - Verificación de la cobertura completa de los 7 años de vida.
+
+Estructura Interna:
+    - `calculos`: Fixture que genera la matriz de pre-cálculo para V1.
+    - `test_hfi_*`: Validaciones del bloque Hortifrut Interna.
+    - `test_hft_*`: Validaciones del bloque Hortifrut Terceros.
+
+Ejecución:
+    pytest tests/unit/test_calculos_variedades.py
+"""
+
 import pytest
 
 from backend.domain.inputs import Rules, Variety, VarietyParamRow

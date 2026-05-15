@@ -1,3 +1,30 @@
+"""
+Archivo: test_inputs.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests unitarios para los modelos de dominio de entrada (A1.2). Valida las
+reglas de integridad, validaciones de Pydantic e inmutabilidad de las
+clases base del motor, asegurando que los datos cargados desde el frontend
+o archivos CSV cumplan con el contrato técnico.
+
+Acciones Principales:
+    - Validación de sumas de control en `BaseTable` con tolerancia de error.
+    - Verificación de la integridad de vida de 7 años en `Variety`.
+    - Validación de rangos y valores por defecto en `Rules`.
+    - Comprobación de restricciones de no-negatividad en `NewProjectCell`.
+    - Validación de la inmutabilidad de `ScenarioState`.
+
+Estructura Interna:
+    - `test_base_table_*`: Verifica la tabla histórica consolidada.
+    - `test_variety_*`: Verifica la definición de curvas varietales.
+    - `test_scenario_state_frozen`: Asegura que el estado sea inalterable.
+
+Ejecución:
+    pytest tests/unit/test_inputs.py
+"""
+
 import pytest
 from pydantic import ValidationError
 
