@@ -1,4 +1,26 @@
-"""Registro de rutas de la API."""
+"""
+Archivo: routes.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Orquestador de rutas de la API. Define los endpoints del sistema y los vincula
+con sus respectivos manejadores (handlers), implementando una lógica de
+despacho basada en el método HTTP para mayor flexibilidad.
+
+Acciones Principales:
+    - Registro de rutas para escenarios, variedades, reglas y proyectos.
+    - Implementación de middleware de despacho por método.
+    - Exposición de endpoints de exportación y recálculo.
+
+Estructura Interna:
+    - `api_routes`: Lista de objetos `Route` de Starlette.
+    - `_dispatch`: Función de orden superior para el enrutamiento interno.
+
+Integración UI:
+    - Este archivo renderiza la vista de la API REST.
+    - Es invocado por el servidor Starlette principal durante la inicialización.
+"""
 
 from starlette.routing import Route
 

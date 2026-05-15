@@ -1,4 +1,27 @@
-"""SECCIÓN 3 — Reglas / Definiciones (4 campos editables verdes)."""
+"""
+Archivo: rules_panel.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Módulo Shiny para la Sección 3: Reglas / Definiciones. Gestiona la edición 
+de parámetros globales del escenario, como porcentajes de royalties, costos 
+de plantines y condiciones de financiamiento.
+
+Acciones Principales:
+    - Renderizado de formulario técnico para parámetros de negocio.
+    - Validación de campos obligatorios antes del guardado.
+    - Persistencia directa de reglas en la base de datos.
+    - Notificación de estados (éxito/error) al usuario.
+
+Estructura Interna:
+    - `rules_panel_ui`: Define la interfaz del panel de reglas.
+    - `rules_panel_server`: Gestiona la lógica de entrada y persistencia.
+
+Integración UI:
+    - Renderiza la Sección 3 del simulador.
+    - Es invocado por `shiny_app/app.py` mediante `rules_panel_ui` y `rules_panel_server`.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,25 @@
-"""Handler upsert para celdas de hectáreas de Nuevos Proyectos."""
+"""
+Archivo: new_projects.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Controlador especializado para la gestión de celdas de hectáreas en los
+módulos de 'Nuevos Proyectos'. Permite la actualización granular de la
+superficie plantada por variedad y temporada.
+
+Acciones Principales:
+    - Upsert (creación o actualización) de registros de hectáreas.
+    - Resolución dinámica de jerarquías (Grupo -> Sub-fila -> Hectáreas).
+    - Validación de existencia de escenarios y temporadas.
+
+Estructura Interna:
+    - `upsert_cell`: Handler principal que gestiona la persistencia de celdas.
+
+Integración UI:
+    - Este archivo renderiza la vista de edición de hectáreas en la grilla.
+    - Es invocado por `routes.py` para sincronizar cambios en tiempo real.
+"""
 
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -26,12 +47,12 @@ async def upsert_cell(request: Request) -> JSONResponse:
         # Obtener season_id
         season_obj = next((s for s in scenario.seasons if s.code == data.season), None)
         if season_obj is None:
-            return JSONResponse({"detail": f"Temporada '{data.season}' no encontrada."}, status_code=404)
+            return JSONResponse(
+                {"detail": f"Temporada '{data.season}' no encontrada."}, status_code=404
+            )
 
         # Obtener variety_id
-        variety = (
-            session.query(Variety).filter_by(scenario_id=sid, name=data.variety_name).first()
-        )
+        variety = session.query(Variety).filter_by(scenario_id=sid, name=data.variety_name).first()
         if variety is None:
             return JSONResponse(
                 {"detail": f"Variedad '{data.variety_name}' no encontrada en el escenario."},
@@ -41,11 +62,7 @@ async def upsert_cell(request: Request) -> JSONResponse:
         bloque_val = data.bloque.value
 
         # Encontrar o crear group
-        group = (
-            session.query(NewProjectGroup)
-            .filter_by(scenario_id=sid, kind=bloque_val)
-            .first()
-        )
+        group = session.query(NewProjectGroup).filter_by(scenario_id=sid, kind=bloque_val).first()
         if group is None:
             group = NewProjectGroup(scenario_id=sid, kind=bloque_val)
             session.add(group)

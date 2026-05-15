@@ -1,6 +1,27 @@
-"""DTOs para request/response de la API Starlette.
+"""
+Archivo: schemas.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Separados de los modelos de dominio para no exponer campos internos (id, created_at, etc.).
+Descripción:
+Define los esquemas de validación y transferencia de datos (DTOs) utilizando
+Pydantic. Estos modelos aseguran la integridad de las entradas y salidas de
+la API, desacoplándolas de los modelos internos del dominio y de la base de datos.
+
+Acciones Principales:
+    - Validación de contratos de entrada para la creación de escenarios.
+    - Definición de estructuras de respuesta para el listado de recursos.
+    - Aplicación de restricciones de rango y formato mediante `Field`.
+
+Estructura Interna:
+    - `ScenarioCreateIn`: Esquema de entrada para nuevos escenarios.
+    - `VarietyIn`: Estructura para definición de variedades y sus parámetros.
+    - `RulesIn/Out`: Contratos para la gestión de reglas de negocio.
+    - `NewProjectCellIn`: Validación para la actualización de celdas de proyecto.
+
+Ejemplo de Integración:
+    from backend.api.schemas import ScenarioCreateIn
+    data = ScenarioCreateIn(**request_json)
 """
 
 from __future__ import annotations

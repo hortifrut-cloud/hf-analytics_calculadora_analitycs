@@ -1,4 +1,26 @@
-"""Handler GET /api/scenarios/{id}/export.xlsx — exporta 5 hojas con xlsxwriter."""
+"""
+Archivo: exports.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Generador de exportaciones en formato Excel (.xlsx). Crea un libro de
+trabajo con múltiples hojas detallando la configuración y resultados del
+escenario analítico, utilizando estilos corporativos (Ciruela/Verde).
+
+Acciones Principales:
+    - Generación de hojas para Tabla Base, Variedades, Reglas y Proyectos.
+    - Consolidación de totales y márgenes en una vista resumen.
+    - Aplicación de formatos condicionales y estilos corporativos.
+
+Estructura Interna:
+    - `export_xlsx`: Handler que sirve el archivo descargable.
+    - `_build_xlsx`: Motor de construcción del archivo Excel (XlsxWriter).
+
+Integración UI:
+    - Proporciona la funcionalidad de descarga de reportes para el usuario.
+    - Es invocado por `routes.py` mediante una petición GET.
+"""
 
 import io
 
@@ -29,9 +51,7 @@ def _build_xlsx(state, derived: dict) -> bytes:
     wb = xlsxwriter.Workbook(buf, {"in_memory": True})
 
     # Formatos
-    header_fmt = wb.add_format(
-        {"bold": True, "bg_color": _CIRUELA, "border": 1, "align": "center"}
-    )
+    header_fmt = wb.add_format({"bold": True, "bg_color": _CIRUELA, "border": 1, "align": "center"})
     num_fmt = wb.add_format({"num_format": "#,##0", "border": 1, "align": "right"})
     num_dec_fmt = wb.add_format({"num_format": "#,##0.00", "border": 1, "align": "right"})
     text_fmt = wb.add_format({"bold": False, "border": 1})
@@ -64,7 +84,14 @@ def _build_xlsx(state, derived: dict) -> bytes:
 
     # ---------- Hoja 2: Variedades ----------
     ws2 = wb.add_worksheet("Variedades")
-    vars_header = ["Variedad", "Año", "Productividad (Kg/p)", "Densidad (p/ha)", "Precio (FOB/kg)", "% Recaudación"]
+    vars_header = [
+        "Variedad",
+        "Año",
+        "Productividad (Kg/p)",
+        "Densidad (p/ha)",
+        "Precio (FOB/kg)",
+        "% Recaudación",
+    ]
     for col, h in enumerate(vars_header):
         ws2.write(0, col, h, header_fmt)
 
@@ -155,6 +182,7 @@ async def export_xlsx(request: Request) -> Response:
         state = repo.get(sid)
     if state is None:
         from starlette.responses import JSONResponse
+
         return JSONResponse({"detail": "Escenario no encontrado."}, status_code=404)
 
     derived = recompute(state)

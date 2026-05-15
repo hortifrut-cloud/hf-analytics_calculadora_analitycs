@@ -1,4 +1,28 @@
-"""SECCIÓN 2 — Datos Variedades (CRUD con validación y acordeón plegable)."""
+"""
+Archivo: varieties_panel.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Módulo Shiny para la Sección 2: Datos Variedades. Implementa un sistema 
+CRUD completo para la gestión de variedades y sus parámetros técnicos 
+(productividad, densidad, precio, recaudación) proyectados a 7 años.
+
+Acciones Principales:
+    - Creación de nuevas variedades con parámetros iniciales.
+    - Edición de parámetros técnicos existentes mediante grilla dinámica.
+    - Eliminación de variedades con validación de dependencias (hectáreas).
+    - Visualización de datos mediante acordeones plegables.
+
+Estructura Interna:
+    - `varieties_panel_ui`: Define el contenedor principal de la sección.
+    - `varieties_panel_server`: Gestiona el flujo CRUD y la reactividad.
+    - `_variety_form`: Generador modular del formulario de entrada de datos.
+
+Integración UI:
+    - Renderiza la Sección 2 del simulador.
+    - Es invocado por `shiny_app/app.py` mediante `varieties_panel_ui` y `varieties_panel_server`.
+"""
 
 from __future__ import annotations
 

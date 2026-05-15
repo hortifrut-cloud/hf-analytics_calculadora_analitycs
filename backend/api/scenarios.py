@@ -1,4 +1,29 @@
-"""Handlers CRUD para escenarios."""
+"""
+Archivo: scenarios.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Controlador de endpoints para la gestión de escenarios. Implementa las
+operaciones CRUD básicas, permitiendo listar, obtener detalles, crear y
+eliminar escenarios analíticos en el sistema.
+
+Acciones Principales:
+    - Listado de identificadores y nombres de escenarios disponibles.
+    - Creación de nuevos escenarios basados en una plantilla canónica.
+    - Recuperación del estado completo de un escenario para la UI.
+    - Eliminación física de escenarios y sus datos relacionados.
+
+Estructura Interna:
+    - `list_scenarios`: Retorna la lista de escenarios existentes.
+    - `create_scenario`: Inicializa un escenario con valores por defecto.
+    - `get_scenario`: Devuelve el estado serializado del escenario.
+    - `delete_scenario`: Elimina el recurso del sistema.
+
+Integración UI:
+    - Este archivo renderiza la vista de los escenarios.
+    - Es invocado por `routes.py` mediante los handlers correspondientes.
+"""
 
 from starlette.requests import Request
 from starlette.responses import JSONResponse

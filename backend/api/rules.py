@@ -1,4 +1,25 @@
-"""Handlers GET/PUT para reglas de un escenario."""
+"""
+Archivo: rules.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Controlador para la gestión de reglas de negocio técnico-económicas.
+Permite la consulta y modificación de parámetros globales que rigen el
+comportamiento financiero de los escenarios.
+
+Acciones Principales:
+    - Obtención de las reglas actuales de un escenario (royalties, costos).
+    - Actualización de parámetros de financiamiento e intereses.
+
+Estructura Interna:
+    - `get_rules`: Recupera el objeto de reglas del repositorio.
+    - `update_rules`: Aplica cambios en los parámetros globales de negocio.
+
+Integración UI:
+    - Este archivo renderiza la vista de reglas de negocio.
+    - Es invocado por `routes.py` para la persistencia de parámetros globales.
+"""
 
 from starlette.requests import Request
 from starlette.responses import JSONResponse

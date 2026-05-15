@@ -1,4 +1,28 @@
-"""Handlers CRUD para variedades."""
+"""
+Archivo: varieties.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Controlador para la gestión de variedades y sus parámetros técnicos. Permite
+personalizar la configuración de cada variedad dentro de un escenario
+específico, afectando directamente los cálculos productivos.
+
+Acciones Principales:
+    - Adición de nuevas variedades a un escenario existente.
+    - Actualización masiva de parámetros (productividad, densidad, precios).
+    - Gestión de la posición y ordenamiento de variedades.
+    - Eliminación de variedades y limpieza de sus parámetros asociados.
+
+Estructura Interna:
+    - `create_variety`: Registra una nueva variedad con sus 7 años de parámetros.
+    - `update_variety_params`: Sobrescribe la configuración técnica de una variedad.
+    - `delete_variety`: Remueve la variedad del escenario.
+
+Integración UI:
+    - Este archivo renderiza la vista de configuración de variedades.
+    - Es invocado por `routes.py` para procesar cambios técnicos.
+"""
 
 from starlette.requests import Request
 from starlette.responses import JSONResponse

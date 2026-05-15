@@ -1,6 +1,21 @@
-"""Configuración global de la aplicación (Pydantic Settings).
+"""
+Archivo: settings.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Lee variables desde .env (o entorno). Sin secrets en código.
+Descripción:
+Gestor de configuración global de la aplicación utilizando Pydantic Settings. 
+Centraliza la lectura de variables de entorno (.env) para el acceso a base 
+de datos, niveles de log y parámetros de reactividad.
+
+Acciones Principales:
+    - Carga automática de `.env` con codificación UTF-8.
+    - Definición de valores por defecto para entornos locales.
+    - Validación de tipos para configuraciones críticas.
+
+Estructura Interna:
+    - `Settings`: Clase base de configuración.
+    - `settings`: Instancia global para importación en el resto del proyecto.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict

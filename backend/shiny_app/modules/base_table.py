@@ -1,4 +1,27 @@
-"""SECCIÓN 1 — Tabla Base (display + fila variación editable + [Confirmar Base])."""
+"""
+Archivo: base_table.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Módulo Shiny que renderiza la Sección 1: Tabla Base. Muestra los volúmenes 
+proyectados por proyecto y temporada, permitiendo la edición de una fila 
+de variación y el bloqueo de la base mediante confirmación.
+
+Acciones Principales:
+    - Renderizado dinámico de la grilla de proyectos (tn por temporada).
+    - Gestión de inputs numéricos para la fila de variación.
+    - Implementación de lógica de bloqueo "Confirmar Base".
+    - Cálculo de subtotales y totales generales en tiempo real.
+
+Estructura Interna:
+    - `base_table_ui`: Define la interfaz visual (título y contenedor).
+    - `base_table_server`: Orquesta el estado reactivo y la renderización.
+
+Integración UI:
+    - Renderiza la Sección 1 del simulador.
+    - Es invocado por `shiny_app/app.py` mediante `base_table_ui` y `base_table_server`.
+"""
 
 from __future__ import annotations
 

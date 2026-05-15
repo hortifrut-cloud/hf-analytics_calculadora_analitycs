@@ -1,4 +1,26 @@
-"""SECCIÓN 5 — Tabla Totales (solo lectura, recalculada dinámicamente)."""
+"""
+Archivo: totals.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Módulo Shiny para la Sección 5: Tabla de Totales. Presenta una vista 
+consolidada de los resultados del escenario, agrupando volúmenes de fruta y 
+ganancias estimadas tanto para Hortifrut como para terceros.
+
+Acciones Principales:
+    - Renderizado de tabla de resumen ejecutivo (solo lectura).
+    - Agrupación jerárquica de resultados (Hortifrut vs Terceros).
+    - Actualización dinámica basada en el estado derivado (recálculo).
+
+Estructura Interna:
+    - `totals_ui`: Define la interfaz de la tabla de totales.
+    - `totals_server`: Procesa el estado derivado para su visualización.
+
+Integración UI:
+    - Renderiza la Sección 5 del simulador.
+    - Es invocado por `shiny_app/app.py` mediante `totals_ui` y `totals_server`.
+"""
 
 from __future__ import annotations
 

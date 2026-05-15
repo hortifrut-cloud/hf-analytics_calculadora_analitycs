@@ -1,4 +1,25 @@
-"""Helpers reactivos: debounce y utilidades Shiny."""
+"""
+Archivo: reactive_helpers.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Utilidades de soporte para la programación reactiva en Shiny. Proporciona 
+herramientas para el control de flujo de eventos (debounce) y el formateo 
+de datos para la interfaz de usuario.
+
+Acciones Principales:
+    - Implementación de patrón debounce para entradas de usuario.
+    - Formateo estandarizado de números y valores nulos para la UI.
+
+Estructura Interna:
+    - `debounce`: Retrasa la actualización de un valor hasta que se estabilice.
+    - `fmt_number`: Convierte valores numéricos a strings formateados.
+
+Ejemplo de Integración:
+    from backend.shiny_app.reactive_helpers import debounce
+    stable_input = debounce(lambda: input.raw_value())
+"""
 
 from __future__ import annotations
 

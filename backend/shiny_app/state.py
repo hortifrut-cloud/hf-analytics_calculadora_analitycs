@@ -1,7 +1,28 @@
-"""Bridge reactivo: acceso a ScenarioState desde Shiny sin HTTP.
+"""
+Archivo: state.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-El session factory se inyecta desde el lifespan de app.py (raíz) mediante
-`configure()`. Así la capa Shiny no depende de la URL del servidor HTTP.
+Descripción:
+Puente reactivo para la gestión de estados entre la base de datos y la 
+interfaz Shiny. Permite el acceso directo a `ScenarioState` sin necesidad 
+de peticiones HTTP circulares, inyectando la factoría de sesiones de forma 
+externa para mantener el desacoplamiento.
+
+Acciones Principales:
+    - Inyección de dependencia de sesión via `configure()`.
+    - Lectura persistente de escenarios y listado de IDs.
+    - Sincronización de reglas de negocio y celdas de proyectos.
+    - Operaciones CRUD directas sobre variedades y sus parámetros técnicos.
+
+Estructura Interna:
+    - `configure`: Registra la factoría de sesiones SQLAlchemy.
+    - `load_scenario`: Carga el estado completo de un escenario.
+    - `upsert_ha_cell`: Sincroniza cambios en hectáreas con la DB.
+
+Ejemplo de Integración:
+    from backend.shiny_app import state
+    state.configure(SessionLocal)
 """
 
 from __future__ import annotations

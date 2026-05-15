@@ -1,4 +1,27 @@
-"""SECCIÓN 4 — Nuevos Proyectos (ha editables + subtotales server-side)."""
+"""
+Archivo: new_projects.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Módulo Shiny para la Sección 4: Nuevos Proyectos. Permite la edición de 
+superficies plantadas (hectáreas) segmentadas por bloques (Crecimiento HF, 
+Recambio Varietal, Nuevos Terceros) y sub-proyectos.
+
+Acciones Principales:
+    - Gestión de inputs numéricos para hectáreas por temporada.
+    - Implementación de lógica debounce para persistencia automática en DB.
+    - Renderizado de subtotales de producción y ganancia calculados.
+    - Filtrado dinámico por variedad activa.
+
+Estructura Interna:
+    - `new_projects_ui`: Define el contenedor y el título de la sección.
+    - `new_projects_server`: Gestiona la lógica de edición, debounce y renderizado.
+
+Integración UI:
+    - Renderiza la Sección 4 del simulador.
+    - Es invocado por `shiny_app/app.py` mediante `new_projects_ui` y `new_projects_server`.
+"""
 
 from __future__ import annotations
 

@@ -1,7 +1,27 @@
-"""Aplicación Shiny para HF Breeding Planner.
+"""
+Archivo: app.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Monta las 5 secciones de UI.png con reactividad completa.
-El session factory se inyecta externamente via state.configure().
+Descripción:
+Punto de entrada principal de la aplicación Shiny. Orquesta la interfaz de 
+usuario y la lógica del servidor, integrando los diferentes módulos 
+funcionales (Tabla Base, Variedades, Reglas, Proyectos y Totales) bajo un 
+estado reactivo unificado.
+
+Acciones Principales:
+    - Definición del layout fluido con CSS corporativo.
+    - Orquestación de la reactividad central (estado actual y resultados).
+    - Montaje de módulos Shiny independientes.
+    - Gestión del selector de escenario activo.
+
+Estructura Interna:
+    - `app_ui`: Definición de la estructura visual de la aplicación.
+    - `server`: Lógica de orquestación de eventos y flujos de datos.
+
+Integración UI:
+    - Este archivo es la raíz de la interfaz reactiva.
+    - Es montado por la aplicación Starlette principal en `/shiny`.
 """
 
 from __future__ import annotations
