@@ -122,12 +122,18 @@ def _orm_to_pydantic_scenario(
         financiamiento_anios=r.financiamiento_anios if r else 5,
     )
 
-    # NewProjectCells
+    # NewProjectCells + subproyectos activos (labels distintos por bloque)
     cells: list[NewProjectCell] = []
     variety_id_to_name = {v.id: v.name for v in orm.varieties}
+    subproyectos: dict[str, list[str]] = {}
     for group in orm.new_project_groups:
         bloque = BloqueKind(group.kind)
+        labels_seen: list[str] = []
+        labels_set: set[str] = set()
         for subrow in group.subrows:
+            if subrow.label not in labels_set:
+                labels_seen.append(subrow.label)
+                labels_set.add(subrow.label)
             variety_name = variety_id_to_name.get(subrow.variety_id, "")
             for ha in subrow.ha_values:
                 if ha.hectareas > 0:
@@ -140,6 +146,8 @@ def _orm_to_pydantic_scenario(
                             hectareas=ha.hectareas,
                         )
                     )
+        if labels_seen:
+            subproyectos[group.kind] = labels_seen
 
     return ScenarioState(
         name=orm.name,
@@ -147,6 +155,7 @@ def _orm_to_pydantic_scenario(
         varieties=pydantic_varieties,
         rules=pydantic_rules,
         new_project_cells=cells,
+        subproyectos=subproyectos,
     )
 
 

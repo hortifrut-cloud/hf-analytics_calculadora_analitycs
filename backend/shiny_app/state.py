@@ -379,6 +379,95 @@ def get_variety_id(scenario_id: int, variety_name: str) -> int | None:
         return v.id if v else None
 
 
+def add_subproyecto(scenario_id: int, bloque_kind: str, label: str) -> bool:
+    """
+    Registra un nuevo sub-proyecto para el (scenario, bloque).
+
+    Crea (o reutiliza) el `NewProjectGroup` y persiste un `NewProjectSubrow`
+    ancla asociado a la primera variedad del escenario, sin valores de
+    hectáreas. La presencia de ese subrow es lo que mantiene visible el
+    sub-proyecto en la UI tras recargar.
+
+    Args:
+        scenario_id (int): ID del escenario.
+        bloque_kind (str): Valor de BloqueKind (crecimiento_hf, recambio_varietal, nuevos_terceros).
+        label (str): Nombre del sub-proyecto a crear.
+
+    Returns:
+        bool: True si se creó; False si el label ya existía o no hay variedades.
+    """
+    from backend.db.models import NewProjectGroup, NewProjectSubrow, Variety
+
+    label = label.strip()
+    if not label:
+        return False
+
+    with _session() as s:
+        v = (
+            s.query(Variety)
+            .filter_by(scenario_id=scenario_id)
+            .order_by(Variety.position.asc(), Variety.id.asc())
+            .first()
+        )
+        if v is None:
+            return False
+
+        g = (
+            s.query(NewProjectGroup)
+            .filter_by(scenario_id=scenario_id, kind=bloque_kind)
+            .first()
+        )
+        if g is None:
+            g = NewProjectGroup(scenario_id=scenario_id, kind=bloque_kind)
+            s.add(g)
+            s.flush()
+
+        existing = (
+            s.query(NewProjectSubrow)
+            .filter_by(group_id=g.id, label=label)
+            .first()
+        )
+        if existing is not None:
+            return False
+
+        s.add(NewProjectSubrow(group_id=g.id, variety_id=v.id, label=label))
+        s.commit()
+
+    _cache_invalidate(scenario_id)
+    return True
+
+
+def remove_subproyecto(scenario_id: int, bloque_kind: str, label: str) -> None:
+    """
+    Elimina un sub-proyecto y todas sus hectáreas asociadas (cascada).
+
+    Borra todos los `NewProjectSubrow` que coincidan con
+    `(scenario_id, bloque_kind, label)`, sin importar la variedad. Sus
+    `NewProjectHa` desaparecen vía cascade.
+
+    Args:
+        scenario_id (int): ID del escenario.
+        bloque_kind (str): Valor de BloqueKind.
+        label (str): Nombre del sub-proyecto a eliminar.
+    """
+    from backend.db.models import NewProjectGroup, NewProjectSubrow
+
+    with _session() as s:
+        g = (
+            s.query(NewProjectGroup)
+            .filter_by(scenario_id=scenario_id, kind=bloque_kind)
+            .first()
+        )
+        if g is None:
+            return
+        subrows = s.query(NewProjectSubrow).filter_by(group_id=g.id, label=label).all()
+        for sr in subrows:
+            s.delete(sr)
+        s.commit()
+
+    _cache_invalidate(scenario_id)
+
+
 def variety_has_ha(scenario_id: int, variety_name: str) -> bool:
     """Devuelve True si hay celdas de ha asignadas a esta variedad."""
     from backend.db.models import NewProjectHa, NewProjectSubrow, Variety
