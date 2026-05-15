@@ -1,4 +1,28 @@
-"""Tests integración — T3.2: modelos ORM y restricciones."""
+"""
+Archivo: test_models.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests de integración para la capa de persistencia ORM (T3.2). Valida la 
+correcta creación de tablas, restricciones de integridad de base de datos 
+(UniqueConstraints, ForeignKeys) y el manejo de tipos de datos complejos 
+como campos JSON para auditoría.
+
+Acciones Principales:
+    - Verificación de la creación de las 12 tablas base del sistema.
+    - Validación de restricciones de unicidad en parámetros de variedades.
+    - Comprobación de integridad referencial (1:1) en reglas por escenario.
+    - Prueba de persistencia y recuperación de payloads JSON en AuditLog.
+
+Estructura Interna:
+    - `test_all_tables_created`: Inspección del esquema generado.
+    - `test_variety_param_unique_constraint`: Validación de unicidad de años.
+    - `test_audit_log_json_payload`: Prueba de tipos de datos complejos.
+
+Ejecución:
+    pytest tests/integration/test_models.py
+"""
 
 import pytest
 from sqlalchemy import inspect

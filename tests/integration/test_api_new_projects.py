@@ -1,4 +1,28 @@
-"""Tests integración — T4.2: upsert celdas de ha."""
+"""
+Archivo: test_api_new_projects.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests de integración para el endpoint de gestión de hectáreas en nuevos 
+proyectos (T4.2). Valida la lógica de "upsert" (creación o actualización) 
+de celdas de planificación, asegurando que los cambios se persistan 
+correctamente en la base de datos y que las validaciones de negocio se 
+apliquen.
+
+Acciones Principales:
+    - Validación de creación de nuevas celdas de hectáreas.
+    - Validación de actualización de valores existentes.
+    - Control de errores para variedades o escenarios inexistentes.
+
+Estructura Interna:
+    - `test_upsert_cell_create`: Prueba la inserción inicial.
+    - `test_upsert_cell_update`: Prueba la modificación de valores.
+    - `test_upsert_cell_variety_not_found`: Valida integridad referencial.
+
+Ejecución:
+    pytest tests/integration/test_api_new_projects.py
+"""
 
 _V1_PARAMS = [
     {"plant_year": i, "productividad": 2.0, "densidad": 6500, "precio_estimado": 4.0, "pct_recaudacion": 1.0}

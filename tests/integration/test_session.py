@@ -1,4 +1,28 @@
-"""Tests integración — T3.1: engine factory."""
+"""
+Archivo: test_session.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests de integración para la factoría de motores y sesiones de base de 
+datos (T3.1). Valida la correcta creación de motores para diferentes 
+dialéctos (SQLite, PostgreSQL) y la configuración específica para entornos 
+de nube (Supabase Pooler), asegurando que el pool de conexiones se adapte 
+a la infraestructura.
+
+Acciones Principales:
+    - Validación de creación de motor SQLite en memoria para tests.
+    - Verificación de desactivación de `check_same_thread` para SQLite.
+    - Validación de uso de `NullPool` para conexiones vía Supabase Transaction Pooler.
+    - Comprobación de que PostgreSQL estándar NO usa `NullPool` por defecto.
+
+Estructura Interna:
+    - `test_sqlite_engine_creates`: Prueba básica de conectividad.
+    - `test_supabase_pooler_uses_nullpool`: Prueba crítica para estabilidad en Prod.
+
+Ejecución:
+    pytest tests/integration/test_session.py
+"""
 
 import pytest
 from sqlalchemy import inspect, text

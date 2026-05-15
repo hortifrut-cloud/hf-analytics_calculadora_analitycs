@@ -1,4 +1,28 @@
-"""Tests integración — T4.3: endpoint recompute contra goldens UI.png."""
+"""
+Archivo: test_api_recompute.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests de integración para el motor de cálculos a través del endpoint 
+`recompute` (T4.3). Valida que el backend procese correctamente los datos 
+de un escenario completo y devuelva los resultados esperados (fruta, 
+ganancia, plantines) coincidiendo con los "Golden Masters" definidos en 
+UI.png.
+
+Acciones Principales:
+    - Validación del flujo completo de cálculo desde la API.
+    - Aserción de valores de fruta y ganancia para el escenario canónico.
+    - Verificación del manejo de errores para escenarios inexistentes.
+
+Estructura Interna:
+    - `ui_png_scenario`: Fixture que prepara un escenario idéntico a UI.png.
+    - `test_recompute_hf_fruta_t2728`: Valida el bloque de fruta HF.
+    - `test_recompute_hf_ganancia_t2728`: Valida el bloque de ganancia HF.
+
+Ejecución:
+    pytest tests/integration/test_api_recompute.py
+"""
 
 import pytest
 

@@ -1,4 +1,28 @@
-"""Tests integración — T4.2: CRUD escenarios."""
+"""
+Archivo: test_api_scenarios.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests de integración para la gestión CRUD de escenarios (T4.2). Valida las 
+operaciones básicas de creación, listado, lectura y eliminación de 
+escenarios de planificación, asegurando la consistencia de los datos en 
+el repositorio.
+
+Acciones Principales:
+    - Validación de creación de escenarios con nombres personalizados.
+    - Verificación del listado global de escenarios.
+    - Comprobación de recuperación de detalles por ID.
+    - Validación del flujo de eliminación lógica y física.
+
+Estructura Interna:
+    - `test_create_scenario`: Prueba el registro de un nuevo escenario.
+    - `test_list_scenarios`: Prueba la recuperación de la colección.
+    - `test_delete_scenario`: Prueba la remoción y posterior inaccesibilidad.
+
+Ejecución:
+    pytest tests/integration/test_api_scenarios.py
+"""
 
 
 def test_create_scenario(api_client):

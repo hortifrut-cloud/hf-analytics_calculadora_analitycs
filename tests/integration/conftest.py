@@ -1,4 +1,26 @@
-"""Fixtures compartidos para tests de integración de la API."""
+"""
+Archivo: conftest.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Configuración de fixtures para pruebas de integración de la API. Provee un 
+`TestClient` de Starlette configurado con una base de datos SQLite en 
+memoria, garantizando que cada prueba se ejecute en un entorno limpio y 
+aislado de la persistencia real.
+
+Acciones Principales:
+    - Inicialización de motores de base de datos efímeros (:memory:).
+    - Creación de esquema de tablas bajo demanda para cada sesión de prueba.
+    - Montaje de rutas de la API en una aplicación Starlette de prueba.
+    - Inyección de factoría de sesiones en el estado de la aplicación.
+
+Estructura Interna:
+    - `api_client`: Fixture principal que entrega el cliente de pruebas.
+
+Ejecución:
+    Invocado automáticamente por pytest en el directorio tests/integration/.
+"""
 
 import pytest
 from starlette.applications import Starlette

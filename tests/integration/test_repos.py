@@ -1,4 +1,28 @@
-"""Tests integración — T3.5: ScenarioRepo round-trip + RulesRepo + AuditRepo."""
+"""
+Archivo: test_repos.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests de integración para la capa de Repositorios (T3.5). Valida el flujo 
+"round-trip" de los objetos de dominio (ScenarioState, Rules) a través de 
+los repositorios hacia la base de datos y su recuperación posterior, 
+asegurando que no haya pérdida de fidelidad en la persistencia.
+
+Acciones Principales:
+    - Validación del ciclo de vida completo de un escenario (Create, Get, Delete).
+    - Verificación de la recuperación correcta de celdas de hectáreas.
+    - Prueba de actualización de reglas de negocio globales.
+    - Validación de registro de eventos en el log de auditoría.
+
+Estructura Interna:
+    - `test_scenario_roundtrip`: Prueba principal de persistencia de dominio.
+    - `test_rules_get_update`: Validación de edición de reglas.
+    - `test_audit_log`: Validación de trazabilidad de cambios.
+
+Ejecución:
+    pytest tests/integration/test_repos.py
+"""
 
 import pytest
 

@@ -1,4 +1,28 @@
-"""Tests integración — T4.2: CRUD variedades."""
+"""
+Archivo: test_api_varieties.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Tests de integración para la gestión de variedades y sus curvas de 
+producción (T4.2). Valida la creación, actualización de parámetros de 
+productividad y eliminación de variedades asociadas a escenarios, 
+garantizando la integridad de los datos de planificación.
+
+Acciones Principales:
+    - Validación de creación de variedades con curvas de 7 años.
+    - Prevención de duplicidad de nombres de variedades por escenario.
+    - Actualización masiva de parámetros de productividad/precio.
+    - Verificación de eliminación y limpieza de relaciones.
+
+Estructura Interna:
+    - `test_create_variety`: Registro de nueva variedad.
+    - `test_update_variety_params`: Edición de curvas de producción.
+    - `test_delete_variety`: Remoción de variedad del escenario.
+
+Ejecución:
+    pytest tests/integration/test_api_varieties.py
+"""
 
 _V1_PARAMS = [
     {"plant_year": 1, "productividad": 2.0, "densidad": 6500, "precio_estimado": 4.0, "pct_recaudacion": 1.0},
