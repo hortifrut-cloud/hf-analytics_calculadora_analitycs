@@ -1,90 +1,78 @@
 # HF Breeding Planner — Business Planning 2026
 
-Plataforma analítica interactiva para simular escenarios del plan de breeding de arándanos (Hortifrut Perú).
+Simulador de planificación de negocio para el área de blueberries de **Hortifrut Perú**, temporadas T26/27 → T31/32. Permite modelar escenarios de crecimiento, recambio varietal y proyectos con terceros, con recálculo automático de producción y ganancia consolidada en tiempo real.
 
-> Descripción funcional completa → [`docs/description_proyecto.md`](docs/description_proyecto.md)
+> Descripción funcional completa y fórmulas → [`docs/description_proyecto.md`](docs/description_proyecto.md)
 
 ---
 
-## Qué hace
+## Stack
 
-El usuario confirma un escenario financiero macro, define variedades con parámetros agronómicos por año de plantación, edita hectáreas planificadas por temporada y proyecto, y observa cómo se recalculan dinámicamente (debounce 1.5 s) los sub-totales y totales consolidados Hortifrut vs. Terceros. Todo el estado persiste en base de datos y sobrevive recargas.
+| Capa | Tecnología | Rol |
+|---|---|---|
+| Frontend | Astro 4 + Tailwind CSS | Shell SPA estático, embebe Shiny via iframe |
+| Servidor | Starlette (ASGI) | Router único: API REST + Shiny + estáticos |
+| Dashboard | Shiny for Python ≥ 1.2 | UI reactiva con debounce 1.5 s y caché en memoria |
+| Cálculo | Pandas ≥ 2.2 · NumPy ≥ 2.1 | Motor puro sin I/O, pipeline topológico determinístico |
+| ORM | SQLAlchemy 2.x + Alembic | Modelos + migraciones, compatible SQLite y Postgres |
+| Base de datos | SQLite (dev) · Supabase Postgres (prod) | Mismo código ORM en ambos entornos |
+| Deploy | ShinyApps.io + rsconnect-python | Un comando para redeploy |
 
-## Stack tecnológico
-
-| Capa | Tecnología |
-|------|-----------|
-| Shell estático | Astro 4 + Tailwind CSS |
-| API / ASGI host | Starlette |
-| Dashboard reactivo | Shiny for Python ≥ 1.2 |
-| Cálculo | Pandas ≥ 2.2 + NumPy ≥ 2.1 |
-| ORM / Migraciones | SQLAlchemy 2.x + Alembic |
-| DB dev | SQLite (`var/app.db`) |
-| DB cloud | Supabase Postgres (transaction pooler) |
-| Gestor Python | uv |
-| Gestor Node | pnpm |
-| Tests | pytest + Hypothesis + Playwright |
-
-> Stack completo con justificaciones → [`docs/plan/plan_maestro.md §Stack`](docs/plan/plan_maestro.md)
+> Stack completo con justificaciones → [`docs/plan/plan_maestro.md`](docs/plan/plan_maestro.md)
 
 ---
 
 ## Quick start
 
 ```powershell
-# 1. Instalar dependencias Python
+# 1. Instalar dependencias
 uv sync
+cd frontend && pnpm install && cd ..
 
-# 2. Configurar variables de entorno
-Copy-Item .env.example .env   # editar DATABASE_URL si es necesario
+# 2. Configurar entorno
+Copy-Item .env.example .env   # editar DATABASE_URL si se usa Supabase
 
-# 3. Levantar backend + frontend en paralelo
+# 3. Sembrar base de datos y arrancar
+uv run python scripts/seed_dev_db.py
 .\scripts\dev.ps1
 ```
 
-- **Backend + Shiny**: http://localhost:8000/shiny/
-- **API status**: http://localhost:8000/api/status
-- **Frontend Astro dev**: http://localhost:4321
-
-> Guía detallada de instalación y despliegue → [`ejecucion.md`](ejecucion.md)
+| Servicio | URL |
+|---|---|
+| App completa (Starlette) | http://localhost:8000 |
+| Dashboard Shiny | http://localhost:8000/shiny/ |
+| Frontend Astro (dev HMR) | http://localhost:4321 |
+| API health check | http://localhost:8000/api/status |
 
 ---
 
 ## Tests
 
 ```powershell
-# Tests unitarios y golden
-uv run python -m pytest tests/unit tests/golden -v
-
-# Tests de integración (API + DB)
-uv run python -m pytest tests/integration -v
-
-# Tests E2E con Playwright (levanta servidor interno automáticamente)
-uv run python -m pytest tests/e2e -v
-
-# Suite completa
-uv run python -m pytest -v
+uv run python -m pytest tests/unit -v        # lógica pura
+uv run python -m pytest tests/golden -v      # vs. CSVs de referencia docs/image/
+uv run python -m pytest tests/integration -v # API + DB SQLite en memoria
+uv run python -m pytest tests/property -v    # invariantes Hypothesis (200 ejemplos)
+uv run python -m pytest tests/e2e -v         # Playwright headless (auto-levanta servidor)
+uv run python -m pytest -v                   # suite completa
 ```
 
 ---
 
-## Build para producción
+## Build y despliegue
 
 ```powershell
+# Compilar frontend y copiar estáticos
 .\scripts\build.ps1
-```
 
-Compila el frontend Astro, inyecta JS inline (compatibilidad ShinyApps.io) y copia estáticos a `backend/static/`. Luego verificar localmente:
-
-```powershell
+# Verificar build localmente
 uv run python -m uvicorn app:app --port 8000
+
+# Deploy a ShinyApps.io
+# (ver ejecucion.md §5 para configurar credenciales rsconnect)
 ```
 
----
-
-## Despliegue a ShinyApps.io
-
-Ver [`ejecucion.md §5`](ejecucion.md#5-despliegue-en-shinyappsio).
+> Guía completa de instalación, build y despliegue → [`ejecucion.md`](ejecucion.md)
 
 ---
 
@@ -92,26 +80,40 @@ Ver [`ejecucion.md §5`](ejecucion.md#5-despliegue-en-shinyappsio).
 
 ```
 hf-breeding-planner/
-├── app.py                  # Entrypoint Starlette (ShinyApps.io)
+├── app.py                      # Entrypoint Starlette (ShinyApps.io: app:app)
 ├── backend/
-│   ├── domain/             # Modelos Pydantic (ScenarioState, DerivedState)
-│   ├── logic/              # Motor de cálculo puro (sin I/O)
-│   ├── db/                 # ORM, repos, seeds, Alembic
-│   ├── api/                # Endpoints REST
-│   └── shiny_app/          # App Shiny + módulos UI
-├── frontend/               # Shell Astro (SPA estática)
+│   ├── domain/                 # Modelos Pydantic inmutables (ScenarioState, DerivedState)
+│   ├── logic/                  # Motor de cálculo puro — sin I/O, sin efectos secundarios
+│   ├── db/                     # ORM SQLAlchemy, repositorios, seeds, Alembic
+│   ├── api/                    # Endpoints REST Starlette
+│   └── shiny_app/              # App Shiny + módulos UI + bridge state.py
+├── frontend/                   # Shell Astro SPA (se compila a backend/static/)
 ├── tests/
-│   ├── unit/               # Tests de lógica pura
-│   ├── golden/             # Tests contra docs/image/*.csv
-│   ├── integration/        # API + DB
-│   ├── property/           # Hypothesis (invariantes)
-│   └── e2e/                # Playwright
-├── scripts/                # dev.ps1, build.ps1, seed_dev_db.py
-└── docs/                   # Especificaciones, plan, imágenes de referencia
+│   ├── unit/                   # Tests de lógica pura
+│   ├── golden/                 # Tests contra docs/image/*.csv
+│   ├── integration/            # API + DB in-memory
+│   ├── property/               # Hypothesis: no-negatividad, idempotencia, monotonía
+│   └── e2e/                    # Playwright: flujo completo UI.png
+├── scripts/                    # dev.ps1, build.ps1, inline_js.py, seed_dev_db.py
+└── docs/
+    ├── architect/              # Diagramas de arquitectura (visión ejecutiva)
+    ├── plan/                   # Plan maestro de implementación
+    ├── image/                  # CSVs y PNGs de referencia (golden data)
+    └── task/                   # Backlog de tareas por fase
 ```
 
 ---
 
-## Licencia
+## Documentación
 
-Uso interno — Hortifrut Chile S.A.
+| Documento | Audiencia | Contenido |
+|---|---|---|
+| [`docs/architect/architecture.md`](docs/architect/architecture.md) | Ejecutivos / Arquitectos | Diagramas C4, flujo reactivo, deployment |
+| [`docs/documentation.md`](docs/documentation.md) | Tech leads / Developers | Referencia técnica profunda, debugging guide |
+| [`docs/description_proyecto.md`](docs/description_proyecto.md) | Product / Dev | Especificación funcional y fórmulas de negocio |
+| [`ejecucion.md`](ejecucion.md) | DevOps / Dev | Build, deploy, troubleshooting |
+| [`CLAUDE.md`](CLAUDE.md) | Agente IA | Comandos, arquitectura, gotchas |
+
+---
+
+> Uso interno — Hortifrut Chile S.A.
