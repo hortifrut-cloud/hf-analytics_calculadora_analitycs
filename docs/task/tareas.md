@@ -496,7 +496,7 @@
 
 ---
 
-## [ ] Fase 2 — Motor de cálculo + golden tests
+## [X] Fase 2 — Motor de cálculo + golden tests
 
 - **Objetivo:** implementar **toda** la matemática de `description_proyecto.md` §3 y validarla contra los CSVs de `docs/image/`.
 - **AC global:**
@@ -507,12 +507,12 @@
 
 ---
 
-### [ ] T2.1 — Loader de fixtures desde `docs/image/*.csv`
+### [X] T2.1 — Loader de fixtures desde `docs/image/*.csv`
 
 - **Objetivo:** que pytest reciba directamente los CSVs como `pd.DataFrame` y el `ScenarioState` canónico.
 - **AC:** `pytest --collect-only` muestra los fixtures.
 
-#### [ ] A2.1.1 — Parser de `imagen1.csv` (Tabla Base)
+#### [X] A2.1.1 — Parser de `imagen1.csv` (Tabla Base)
 
 - **Input:** archivo `docs/image/imagen1.csv` (cabecera + 3 proyectos + Total + variación).
 - **Output:** fixture `base_table_imagen1: BaseTable`.
@@ -520,14 +520,14 @@
 - **Tests:** test que verifica `base_table_imagen1.rows[0].values["T2627"] == 37`.
 - **AC:** ok.
 
-#### [ ] A2.1.2 — Fixture `scenario_ui_png`
+#### [X] A2.1.2 — Fixture `scenario_ui_png`
 
 - **Output:** `ScenarioState` con V1 + 5 celdas de ha de UI.png.
 - **Proceso:** construir desde literales Python (no parsear PNG). Los valores vienen de `plan_maestro.md` §Datos de referencia.
 - **Tests:** `scenario_ui_png.varieties[0].params[0].productividad == 2`.
 - **AC:** ok.
 
-#### [ ] A2.1.3 — Parsers de matrices `imagen{7,8,9,10}.csv`
+#### [X] A2.1.3 — Parsers de matrices `imagen{7,8,9,10}.csv`
 
 - **Output:** fixtures `matriz_imagen7..10` como `dict[(plant_year, season), float]` para sub-totales y filas individuales.
 - **Proceso:** parsear CSV (cuidando filas en blanco), extraer filas Año k producción / ganancia / plantines.
@@ -536,30 +536,30 @@
 
 ---
 
-### [ ] T2.2 — `calculos_variedades.py` (§3.4)
+### [X] T2.2 — `calculos_variedades.py` (§3.4)
 
 - **Objetivo:** matriz `(variety × productor × plant_year)` con productividades y ganancias.
 - **AC:** valores HFI/HFT/Terceros para V1 coinciden con valores teóricos (verificados a mano en `plan_maestro.md`).
 
-#### [ ] A2.2.1 — Hortifrut Producción Interna
+#### [X] A2.2.1 — Hortifrut Producción Interna
 
 - **Objetivo:** `Prod = Productividad × Densidad`; `Gan = Precio × Prod`.
 - **Tests:** V1 año 1 → `Prod = 13_000`, `Gan = 52_000`. V1 año 5 → `Prod = 32_500`.
 - **AC:** test pasa.
 
-#### [ ] A2.2.2 — Hortifrut Producción Terceros
+#### [X] A2.2.2 — Hortifrut Producción Terceros
 
 - **Objetivo:** `ProdHFT = Productividad × Densidad × %Recaud`. Ganancia venta propia = `ProdHFT × Precio × R`. Ganancia venta productor = `ProdTerceros × Precio × R`.
 - **Tests:** V1 año 1 → `ProdHFT = 13_000` (recaud=100%), Gan venta propia = `6_240`, Gan venta productor = `0`. V1 año 5 → `ProdHFT = 22_750`, Gan venta propia = `10_920`, Gan venta productor = `4_680`.
 - **AC:** test pasa.
 
-#### [ ] A2.2.3 — Terceros (externo)
+#### [X] A2.2.3 — Terceros (externo)
 
 - **Objetivo:** `Prod = ProdHFI × (1 − %Recaud)`. Ganancia venta HF = `Precio × ProdHFT × (1 − R)`. Ganancia venta propia = `Precio × ProdTerceros × (1 − R)`.
 - **Tests:** V1 año 5 → `ProdTerceros = 9_750`, ambas ganancias.
 - **AC:** test pasa.
 
-#### [ ] A2.2.4 — Orquestador `compute_calculos_variedades`
+#### [X] A2.2.4 — Orquestador `compute_calculos_variedades`
 
 - **Lógica:** ensamblar las tres en un dict indexado por `(variety, productor, plant_year)`.
 - **Tests:** `tests/unit/test_calculos_variedades.py` cubre A2.2.1–A2.2.3.
@@ -567,12 +567,12 @@
 
 ---
 
-### [ ] T2.3 — `lag_matrix.py` (§3.5)
+### [X] T2.3 — `lag_matrix.py` (§3.5)
 
 - **Objetivo:** helper para construir matrices `M[n, t] = ha(t − n)`.
 - **AC:** `M[1, T2728] == ha[T2627]`; offset correcto.
 
-#### [ ] A2.3.1 — `build_lag_matrix`
+#### [X] A2.3.1 — `build_lag_matrix`
 
 - **Lógica:**
   ```python
@@ -588,7 +588,7 @@
 - **Tests:** ha=`{T2627: 100, T2728: 50}` con max_plant_year=5 ⇒ `M[1, T2728]=100`, `M[2, T2829]=100`, `M[1, T2829]=50`.
 - **AC:** test exacto.
 
-#### [ ] A2.3.2 — Agregador por sub-proyecto
+#### [X] A2.3.2 — Agregador por sub-proyecto
 
 - **Lógica:** suma de ha por temporada **sobre los sub-proyectos** del bloque/variedad antes de aplicar el shift.
 - **Tests:** B3 V1 (Talsa T2627=100 + Diamond Bridge T2627=25) ⇒ agregado T2627 = 125.
@@ -596,12 +596,12 @@
 
 ---
 
-### [ ] T2.4 — `crecimiento_hf.py` (§3.6)
+### [X] T2.4 — `crecimiento_hf.py` (§3.6)
 
 - **Objetivo:** producir `MatrizSubyacente` y `Subtotales` del bloque B1 por variedad.
 - **AC:** golden test contra imagen 7 + sub-totales de UI.png.
 
-#### [ ] A2.4.1 — Función `compute_block_crecimiento_hf`
+#### [X] A2.4.1 — Función `compute_block_crecimiento_hf`
 
 - **Lógica:**
   ```python
@@ -614,19 +614,19 @@
   - Sub-total producción T2829 = `3_250 + 4_225 = 7_475` (Año1 200×13/1000 + Año2 250×16,5)
 - **AC:** valores exactos.
 
-#### [ ] A2.4.2 — Golden test imagen 7
+#### [X] A2.4.2 — Golden test imagen 7
 
 - **Tests:** `tests/golden/test_golden_imagen7_crecimiento.py` carga `matriz_imagen7` y compara TODA la matriz vs. el output.
 - **AC:** subtotales producción `[3_250, 7_475, 10_400, 13_325, 14_625]` (T2728..T3132), ganancia `[13_000, 29_900, 41_600, 53_300, 58_500]`. Tolerancia `abs ≤ 1`.
 
 ---
 
-### [ ] T2.5 — `recambio.py` (§3.7)
+### [X] T2.5 — `recambio.py` (§3.7)
 
 - **Objetivo:** misma estructura que T2.4.
 - **AC:** golden contra imagen 8.
 
-#### [ ] A2.5.1 — Implementación
+#### [X] A2.5.1 — Implementación
 
 - **Lógica:** reutilizar internamente el motor de T2.4 parametrizado por `BloqueKind.RECAMBIO_VARIETAL`. Idealmente extraer una función `_compute_hf_internal_block(bloque_kind, scenario, calculos)`.
 - **Tests:** golden test contra imagen 8 (OLMOS=50@T2728 ⇒ subtotales `[650, 975, 1300, 1625, 1625]` y `[2600, 3900, 5200, 6500, 6500]`).
@@ -634,18 +634,18 @@
 
 ---
 
-### [ ] T2.6 — `nuevos_terceros.py` (§3.8.1)
+### [X] T2.6 — `nuevos_terceros.py` (§3.8.1)
 
 - **Objetivo:** bloque B3 con su lógica específica.
 - **AC:** golden imagen 9 (filas producción y ganancia, **no** plantines — eso es T2.7).
 
-#### [ ] A2.6.1 — Producción
+#### [X] A2.6.1 — Producción
 
 - **Lógica:** `Producción(n, t) = ha_agg(t − n) × ProdHFT(V, n) / 1000`.
 - **Tests:** Año 1 T2728 con ha=125 (Talsa 100 + Diamond Bridge 25) ⇒ `125 × 13_000 / 1000 = 1_625`. Sub-total producción T2829 = `1_300 + 2_438 = 3_738` (Año1 con 100ha + Año2 con 125ha).
 - **AC:** valores cuadran con imagen 9.
 
-#### [ ] A2.6.2 — Ganancia (suma de ambas royaltías)
+#### [X] A2.6.2 — Ganancia (suma de ambas royaltías)
 
 - **Lógica:** `Ganancia(n, t) = ha_agg(t − n) × (GanRoyVentaPropia(V, n) + GanRoyVentaProductor(V, n)) / 1000`.
 - **Tests:**
@@ -656,18 +656,18 @@
 
 ---
 
-### [ ] T2.7 — `plantines.py` (§3.8.2)
+### [X] T2.7 — `plantines.py` (§3.8.2)
 
 - **Objetivo:** Ganancia Plantines con tope por `Financiamiento`.
 - **AC:** golden imagen 9 sub-total plantines `[569, 1_024, 1_024, 1_024, 1_024]`.
 
-#### [ ] A2.7.1 — Fórmula base (lineal, sin interés)
+#### [X] A2.7.1 — Fórmula base (lineal, sin interés)
 
 - **Lógica:** `GP(n, t) = ha_agg(t − n) × Densidad(V, n) × Costo_Plantines / Financiamiento / 1000`.
 - **Tests:** Año 1 T2728: `125 × 6_500 × 3.5 / 5 / 1000 = 568.75` → redondeo a `569`.
 - **AC:** valor numérico ok.
 
-#### [ ] A2.7.2 — Máscara de truncamiento por `Financiamiento`
+#### [X] A2.7.2 — Máscara de truncamiento por `Financiamiento`
 
 - **Lógica:** `GP(n, t) = 0  si  n > Financiamiento_anios`.
 - **Tests:**
@@ -675,7 +675,7 @@
   - `financiamiento_anios=3`: plantines solo en T2728, T2829, T2930; T3031 y T3132 son 0 para esa siembra.
 - **AC:** ambos casos pasan.
 
-#### [ ] A2.7.3 — Hook `cuota_amortizacion` (futuro)
+#### [X] A2.7.3 — Hook `cuota_amortizacion` (futuro)
 
 - **Lógica:** función pura `cuota_amortizacion(capital, i, n) -> float` con `Cuota = Capital × i / (1 − (1+i)^(−n))`. Por ahora **no usada** en el cálculo; switch en `Rules.interes_financiamiento > 0` queda como TODO documentado.
 - **Tests:** `cuota_amortizacion(1000, 0.10, 5)` ≈ `263.80`.
@@ -683,30 +683,30 @@
 
 ---
 
-### [ ] T2.8 — `terceros_totales.py` (§3.9)
+### [X] T2.8 — `terceros_totales.py` (§3.9)
 
 - **Objetivo:** matriz subyacente que alimenta el sub-bloque “Terceros” de Totales, **solo con hectáreas de B3**.
 - **AC:** golden imagen 10.
 
-#### [ ] A2.8.1 — Producción Terceros
+#### [X] A2.8.1 — Producción Terceros
 
 - **Lógica:** `ProdT(n, t) = ha_B3_agg(t − n) × ProdTerceros(V, n) / 1000`.
 - **Tests:** verificar que ha de B1/B2 **no** contribuyen.
 - **AC:** modificar ha de CHAO en B1 no cambia este resultado.
 
-#### [ ] A2.8.2 — Ganancia Terceros
+#### [X] A2.8.2 — Ganancia Terceros
 
 - **Lógica:** `GanT(n, t) = ha_B3_agg(t − n) × (GanFOB_Terceros_VentaHF + GanFOB_Terceros_VentaPropia) / 1000`.
 - **Tests + AC:** sub-total producción T2728..T3132 = `[—, —, 325, 1_073, 1_869]`; sub-total ganancia = `[5_720, 13_156, 18_304, 23_452, 25_740]` (de UI.png Totales Terceros).
 
 ---
 
-### [ ] T2.9 — `totales.py` (§3.10)
+### [X] T2.9 — `totales.py` (§3.10)
 
 - **Objetivo:** consolidar Hortifrut y Terceros.
 - **AC:** golden contra UI.png sección 5.
 
-#### [ ] A2.9.1 — Hortifrut (suma B1 + B2 + B3 + plantines)
+#### [X] A2.9.1 — Hortifrut (suma B1 + B2 + B3 + plantines)
 
 - **Lógica:**
   ```
@@ -716,25 +716,25 @@
 - **Tests:** T2728 HF_fruta = `3_250 + 650 + 1_625 = 5_525` ✓; HF_ganancia = `13_000 + 2_600 + 780 + 569 = 16_949` ✓.
 - **AC:** todos los valores de la tabla.
 
-#### [ ] A2.9.2 — Terceros (solo desde T2.8)
+#### [X] A2.9.2 — Terceros (solo desde T2.8)
 
 - **Tests:** valores arriba.
 - **AC:** coinciden.
 
 ---
 
-### [ ] T2.10 — Orquestador `recompute.py`
+### [X] T2.10 — Orquestador `recompute.py`
 
 - **Objetivo:** una sola función `recompute(scenario) -> DerivedState`.
 - **AC:** un solo test de simulación reproduce TODA la UI.png.
 
-#### [ ] A2.10.1 — Función `recompute`
+#### [X] A2.10.1 — Función `recompute`
 
 - **Lógica:** orden topológico: `calculos_variedades` → `crecimiento_hf` + `recambio` + `nuevos_terceros` (paralelizables) → `plantines` → `terceros_totales` → `totales`.
 - **Tests:** `tests/simulation/test_user_flow_ui_png.py` carga `scenario_ui_png`, llama `recompute`, compara `DerivedState` completo contra los goldens.
 - **AC:** test pasa.
 
-#### [ ] A2.10.2 — Ordenamiento determinístico
+#### [X] A2.10.2 — Ordenamiento determinístico
 
 - **Lógica:** ordenar índices de DataFrames con `sort_index()` antes de retornar para garantizar JSON estable.
 - **Tests:** `json.dumps(recompute(s).model_dump()) == json.dumps(recompute(s).model_dump())` exacto.
@@ -742,30 +742,30 @@
 
 ---
 
-### [ ] T2.11 — Tests property-based (Hypothesis)
+### [X] T2.11 — Tests property-based (Hypothesis)
 
 - **Objetivo:** invariantes que se cumplen siempre.
 - **AC:** Hypothesis con `max_examples=200` no encuentra contraejemplos.
 
-#### [ ] A2.11.1 — No-negatividad
+#### [X] A2.11.1 — No-negatividad
 
 - **Hipótesis:** `∀ inputs ≥ 0 ⇒ todos los outputs derivados ≥ 0`.
 - **Tests:** estrategia Hypothesis genera escenarios; verifica `all(v ≥ 0 for v in derived.flatten())`.
 - **AC:** sin contraejemplos.
 
-#### [ ] A2.11.2 — Idempotencia
+#### [X] A2.11.2 — Idempotencia
 
 - **Hipótesis:** `recompute(s) == recompute(s)`.
 - **Tests:** comparar hash JSON.
 - **AC:** ok.
 
-#### [ ] A2.11.3 — Monotonía
+#### [X] A2.11.3 — Monotonía
 
 - **Hipótesis:** aumentar ha de un sub-proyecto **nunca** decrece la producción total.
 - **Tests:** generar dos escenarios `s1` y `s2 = s1 + Δha`. Verificar `totales(s2).hortifrut_fruta[t] >= totales(s1).hortifrut_fruta[t]`.
 - **AC:** ok.
 
-#### [ ] A2.11.4 — Linealidad (producción/ganancia, NO plantines)
+#### [X] A2.11.4 — Linealidad (producción/ganancia, NO plantines)
 
 - **Hipótesis:** `recompute(λ·s).produccion == λ·recompute(s).produccion` para `λ > 0`. **Excluir** plantines (truncamiento no es lineal en `Financiamiento`).
 - **Tests:** sintetizar y verificar.
