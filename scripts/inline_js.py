@@ -1,8 +1,26 @@
-"""Post-procesador para ShinyApps.io.
+"""
+Archivo: inline_js.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Inyecta los scripts /_astro/*.js inline en index.html y convierte rutas de
-favicon absolutas a relativas, para que el build funcione bajo cualquier
-subpath dinámico asignado por el worker de ShinyApps.io.
+Descripción:
+Post-procesador de build diseñado para entornos de ShinyApps.io. Inyecta 
+scripts de Astro inline y normaliza rutas de assets (favicon, JS) de 
+absolutas a relativas para garantizar el funcionamiento bajo sub-paths 
+dinámicos.
+
+Acciones Principales:
+    - Inyección de scripts `/_astro/*.js` directamente en el HTML.
+    - Conversión de rutas absolutas de favicon a relativas.
+    - Corrección de referencias a assets estáticos.
+
+Estructura Interna:
+    - `inline_scripts`: Gestiona la inyección de código JS.
+    - `fix_favicon_paths`: Ajusta las rutas de iconos.
+    - `fix_absolute_asset_refs`: Normaliza cualquier ruta absoluta restante.
+
+Ejecución:
+    python scripts/inline_js.py
 """
 from __future__ import annotations
 

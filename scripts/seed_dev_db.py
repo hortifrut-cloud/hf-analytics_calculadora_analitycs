@@ -1,6 +1,24 @@
-"""Inicializa var/app.db con el escenario canónico de UI.png.
+"""
+Archivo: seed_dev_db.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Uso:  uv run python scripts/seed_dev_db.py
+Descripción:
+Script de utilidad para inicializar la base de datos de desarrollo (SQLite) 
+con un escenario canónico basado en el diseño UI.png. Automatiza la 
+creación de tablas y la inserción de datos de prueba para asegurar un 
+entorno de desarrollo consistente.
+
+Acciones Principales:
+    - Creación del directorio de datos `var/`.
+    - Inicialización de tablas mediante SQLAlchemy `create_all`.
+    - Inserción de semillas (seeds) para escenarios, variedades y reglas.
+
+Estructura Interna:
+    - Bloque `if __name__ == "__main__":`: Orquesta el proceso de inicialización.
+
+Ejecución:
+    uv run python scripts/seed_dev_db.py
 """
 
 import sys
