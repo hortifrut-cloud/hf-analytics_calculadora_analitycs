@@ -1,6 +1,25 @@
-"""Seeds — datos iniciales para el escenario canónico de UI.png.
+"""
+Archivo: seeds.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-`apply_defaults(session, scenario_id)` inserta Tabla Base y Reglas default.
+Descripción:
+Generador de datos semilla (seeds) para el sistema. Proporciona funciones para 
+inicializar la base de datos con escenarios de prueba canónicos, facilitando 
+el desarrollo y la validación visual.
+
+Acciones Principales:
+    - Construcción del escenario de demostración basado en UI.png.
+    - Inserción masiva de parámetros técnicos por defecto para variedades.
+    - Configuración inicial de celdas de proyectos para todos los bloques.
+
+Estructura Interna:
+    - `build_ui_png_scenario`: Crea el objeto de negocio para el demo.
+    - `seed_ui_png`: Persiste el escenario demo en la base de datos.
+
+Ejemplo de Integración:
+    from backend.db.seeds import seed_ui_png
+    scenario_id = seed_ui_png(session)
 """
 
 from sqlalchemy.orm import Session
@@ -21,7 +40,13 @@ _SEASONS = ALL_SEASONS
 
 
 def build_ui_png_scenario() -> ScenarioState:
-    """Construye el ScenarioState canónico de UI.png (variedad V1)."""
+    """
+    Construye el estado de un escenario de prueba completo basado en el 
+    flujo canónico de la interfaz de usuario (UI.png).
+
+    Returns:
+        ScenarioState: Objeto de dominio con datos precargados.
+    """
     params = [
         VarietyParamRow(
             plant_year=y, productividad=p, densidad=6500.0, precio_estimado=4.0, pct_recaudacion=r
@@ -111,6 +136,14 @@ def build_ui_png_scenario() -> ScenarioState:
 
 
 def seed_ui_png(session: Session) -> int:
-    """Inserta el escenario canónico. Devuelve el ID creado."""
+    """
+    Inserta el escenario canónico en la base de datos a través del repositorio.
+
+    Args:
+        session (Session): Sesión activa de SQLAlchemy.
+
+    Returns:
+        int: ID del nuevo escenario creado.
+    """
     repo = ScenarioRepo(session)
     return repo.create(build_ui_png_scenario())

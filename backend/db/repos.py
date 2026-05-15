@@ -1,7 +1,28 @@
-"""Repositorios: capa de acceso a datos.
+"""
+Archivo: repos.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Todas las funciones públicas aceptan y devuelven modelos Pydantic del dominio.
-Internamente convierten entre ORM y Pydantic.
+Descripción:
+Capa de Repositorios para el acceso y persistencia de datos. Actúa como 
+mediador entre los modelos ORM de SQLAlchemy y los modelos Pydantic del 
+dominio, centralizando la lógica de consulta y comando.
+
+Acciones Principales:
+    - Persistencia de estados de escenario completos (ScenarioState).
+    - CRUD de reglas de negocio y parámetros de variedades.
+    - Registro de auditoría mediante la capa de servicios.
+    - Conversión bidireccional entre objetos de base de datos y objetos de negocio.
+
+Estructura Interna:
+    - `ScenarioRepo`: Gestiona el ciclo de vida de los escenarios.
+    - `RulesRepo`: Gestiona las reglas técnico-económicas.
+    - `AuditRepo`: Gestiona el rastro de auditoría.
+
+Ejemplo de Integración:
+    from backend.db.repos import ScenarioRepo
+    repo = ScenarioRepo(session)
+    scenario = repo.get(scenario_id)
 """
 
 from typing import Any, cast

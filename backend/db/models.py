@@ -1,7 +1,24 @@
-"""Modelos ORM — SQLAlchemy 2.x Mapped[].
+"""
+Archivo: models.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Esquema según description_proyecto.md §1.3.
-Usa sqlalchemy.JSON (nunca JSONB) para portabilidad SQLite ↔ Postgres.
+Descripción:
+Definición de los modelos de datos (ORM) utilizando SQLAlchemy 2.x. Mapea la 
+estructura lógica del negocio (Escenarios, Variedades, Reglas) a tablas 
+relacionales, garantizando la integridad referencial y la persistencia de datos.
+
+Acciones Principales:
+    - Mapeo de entidades del dominio a tablas de base de datos.
+    - Definición de relaciones (1:1, 1:N) y cascadas de eliminación.
+    - Implementación de restricciones de unicidad y valores por defecto.
+
+Estructura Interna:
+    - `Scenario`: Entidad principal que agrupa toda la información de un caso.
+    - `Season`, `Variety`, `Rules`: Componentes estructurales del escenario.
+    - `BaseTableRow/Value`: Datos de la tabla base de entrada.
+    - `NewProjectHa`: Registro de hectáreas plantadas por temporada.
+    - `AuditLog`: Registro de auditoría para cambios en el sistema.
 """
 
 from datetime import datetime
@@ -27,6 +44,10 @@ from backend.db.base import Base
 
 
 class Scenario(Base):
+    """
+    Representa un escenario analítico completo dentro del sistema.
+    Es la entidad raíz que consolida temporadas, variedades y reglas.
+    """
     __tablename__ = "scenario"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -63,6 +84,10 @@ class Scenario(Base):
 
 
 class Season(Base):
+    """
+    Representa una temporada agrícola (ej. T2627). Define la escala 
+    temporal para los cálculos del escenario.
+    """
     __tablename__ = "season"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -170,6 +195,10 @@ class VarietyParam(Base):
 
 
 class Rules(Base):
+    """
+    Define los parámetros globales y reglas de negocio para los cálculos 
+    técnico-económicos del escenario.
+    """
     __tablename__ = "rules"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -234,6 +263,10 @@ class NewProjectHa(Base):
 
 
 class AuditLog(Base):
+    """
+    Almacena el rastro de auditoría de las acciones realizadas sobre 
+    las entidades del sistema, permitiendo trazabilidad de cambios.
+    """
     __tablename__ = "audit_log"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
