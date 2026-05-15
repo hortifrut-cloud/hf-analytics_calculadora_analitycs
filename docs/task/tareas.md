@@ -1120,16 +1120,16 @@
 
 ---
 
-## [ ] Fase 6 — Integración Starlette ↔ Shiny ↔ estáticos
+## [X] Fase 6 — Integración Starlette ↔ Shiny ↔ estáticos
 
 - **Objetivo:** un solo proceso atiende API + Shiny + estáticos.
 - **AC global:** `localhost:8000/` carga el shell Astro; `localhost:8000/shiny/` la app reactiva; `/api/*` los endpoints.
 
 ---
 
-### [ ] T6.1 — Orden de mounts en `app.py`
+### [X] T6.1 — Orden de mounts en `app.py`
 
-#### [ ] A6.1.1 — Verificar orden
+#### [X] A6.1.1 — Verificar orden
 
 - **Lógica:** rutas API → `/shiny` → `/` (StaticFiles **siempre al final**, ver `plan_replication.md` §4.3).
 - **Tests:** los 3 cURLs.
@@ -1137,9 +1137,9 @@
 
 ---
 
-### [ ] T6.2 — Pipeline build Astro → estáticos
+### [X] T6.2 — Pipeline build Astro → estáticos
 
-#### [ ] A6.2.1 — `scripts/build.ps1`
+#### [X] A6.2.1 — `scripts/build.ps1`
 
 - **Lógica:**
   ```powershell
@@ -1150,16 +1150,16 @@
   ```
 - **AC:** tras correr, `localhost:8000/` muestra el shell Astro.
 
-#### [ ] A6.2.2 — `scripts/inline_js.py`
+#### [X] A6.2.2 — `scripts/inline_js.py`
 
 - **Lógica:** inyectar JS de `dist/_astro/*.js` inline en `index.html` y corregir rutas de favicon. Patrón validado en `plan_replication.md` §5.
 - **AC:** `index.html` no referencia recursos en `/_astro/`.
 
 ---
 
-### [ ] T6.3 — Auditoría rutas relativas
+### [X] T6.3 — Auditoría rutas relativas
 
-#### [ ] A6.3.1 — Grep de rutas absolutas
+#### [X] A6.3.1 — Grep de rutas absolutas
 
 - **Proceso:** `grep -r '"/api' frontend/src`; `grep -r '"/shiny' frontend/src`. Deben estar como `./api` o `./shiny`.
 - **AC:** sin matches absolutos.
