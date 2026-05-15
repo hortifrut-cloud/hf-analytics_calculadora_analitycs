@@ -1,14 +1,28 @@
-"""Tests E2E con Playwright — Flujo completo UI.png + persistencia tras reload.
+"""
+Archivo: test_playwright_flow.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Cubre T8.1 (setup), T8.2 (flujo UI.png) y T8.3 (recarga y persistencia).
+Descripción:
+Suite de pruebas de extremo a extremo (E2E) que valida el flujo completo de 
+la aplicación según el diseño UI.png. Utiliza Playwright para simular 
+interacciones de usuario reales, validando la renderización de Astro, la 
+reactividad de Shiny y la persistencia de datos tras recargas de página.
 
-Orden deliberado:
-  - Los tests que solo leen (golden, reload) corren primero.
-  - El test que modifica el DB (edit_ha) corre al final para no contaminar
-    el estado que ven los otros tests.
+Acciones Principales:
+    - Verificación de carga del shell Astro y el iframe de Shiny.
+    - Validación de valores calculados contra "Golden Masters" de negocio.
+    - Test de persistencia y manejo de rutas (anti-404) tras reload.
+    - Simulación de edición de datos (hectáreas) y validación de recálculo asíncrono.
 
-El servidor arranca con el escenario canónico ya sembrado (ver conftest.py).
-Golden values de plan_maestro.md §Datos de referencia.
+Estructura Interna:
+    - `test_astro_shell_loads`: Valida el contenedor principal.
+    - `test_totals_golden_values`: Aserción de valores finales de la Sección 5.
+    - `test_reload_preserves_values`: Garantiza que el estado no se pierde.
+    - `test_edit_ha_updates_subtotals`: Prueba de fuego del flujo CRUD reactivo.
+
+Ejecución:
+    pytest tests/e2e/test_playwright_flow.py
 """
 
 from __future__ import annotations

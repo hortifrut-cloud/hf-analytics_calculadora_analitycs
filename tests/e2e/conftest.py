@@ -1,8 +1,27 @@
-"""Fixtures E2E para Playwright.
+"""
+Archivo: conftest.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Levanta un uvicorn real con una SQLite efímera sembrada con el escenario
-canónico de UI.png.  Cada función de test recibe un `page` fresco pero
-comparte el servidor (scope="session") para mayor velocidad.
+Descripción:
+Orquestador de fixtures para pruebas de extremo a extremo (E2E) utilizando 
+Playwright. Gestiona el ciclo de vida de un servidor Uvicorn real y una 
+base de datos SQLite efímera sembrada con datos canónicos, permitiendo 
+validar la integración completa entre el frontend Astro y el backend Shiny.
+
+Acciones Principales:
+    - Gestión de puerto dinámico para el servidor de pruebas.
+    - Inicialización y sembrado de base de datos temporal para aislamiento.
+    - Lanzamiento y terminación de procesos de servidor asíncronos.
+    - Provisión de objetos `page` de Playwright configurados con el servidor vivo.
+
+Estructura Interna:
+    - `live_server`: Fixture de sesión que levanta la infraestructura.
+    - `page`: Fixture de función que entrega un contexto de navegación limpio.
+    - `_seed_temp_db`: Helper para preparar el estado inicial de la DB.
+
+Ejecución:
+    Invocado automáticamente por pytest en el directorio tests/e2e/.
 """
 
 from __future__ import annotations
