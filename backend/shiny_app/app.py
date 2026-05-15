@@ -49,12 +49,12 @@ _CSS_PATH = Path(__file__).parent / "styles.css"
 app_ui = ui.page_fluid(
     ui.include_css(_CSS_PATH),
     ui.tags.div(
-        ui.tags.h4(
+        ui.tags.h5(
             "Business Planning 2026 — Perú · T26/27 → T31/32",
-            style="color: #0E7C3E; margin-bottom: 4px;",
+            class_="hf-app-title",
         ),
         ui.output_ui("scenario_selector_bar"),
-        style="margin-bottom:12px;",
+        class_="hf-app-header",
     ),
     # Sección 1 — Tabla Base
     ui.card(
@@ -113,6 +113,16 @@ def server(input: ui.input, output: ui.output, session: ui.session) -> None:  # 
             return None
         return recompute(state)
 
+    # Snapshot del derived anterior — se captura justo ANTES de guardar reglas
+    # para mostrar badges de delta (▲/▼) en Secciones 4 y 5
+    _snapshot_derived: reactive.Value[dict | None] = reactive.value(None)
+
+    def capture_snapshot() -> None:
+        _snapshot_derived.set(current_derived())
+
+    def get_snapshot() -> dict | None:
+        return _snapshot_derived.get()
+
     # --- Selector de escenario en cabecera ---
     @render.ui
     def scenario_selector_bar() -> ui.Tag:
@@ -158,6 +168,7 @@ def server(input: ui.input, output: ui.output, session: ui.session) -> None:  # 
         state_fn=current_state,
         reload_fn=trigger_reload,
         scenario_id_rv=scenario_id,
+        snapshot_fn=capture_snapshot,
     )
     new_projects_server(
         "new_projects",
@@ -165,10 +176,12 @@ def server(input: ui.input, output: ui.output, session: ui.session) -> None:  # 
         derived_fn=current_derived,
         reload_fn=trigger_reload,
         scenario_id_rv=scenario_id,
+        prev_derived_fn=get_snapshot,
     )
     totals_server(
         "totals",
         derived_fn=current_derived,
+        prev_derived_fn=get_snapshot,
     )
 
 

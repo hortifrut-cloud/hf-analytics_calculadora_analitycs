@@ -59,6 +59,28 @@ def _fmt(v: object) -> str:
         return "—"
 
 
+def _delta_cell(val: object, prev_val: object) -> ui.Tag:
+    """Celda con valor + badge de delta respecto al snapshot anterior."""
+    formatted = _fmt(val)
+    try:
+        v = float(val or 0)  # type: ignore[arg-type]
+        p = float(prev_val or 0)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return ui.tags.td(formatted)
+    delta = v - p
+    if abs(delta) < 0.5:
+        return ui.tags.td(formatted)
+    arrow = "▲" if delta > 0 else "▼"
+    css_class = "delta-up" if delta > 0 else "delta-down"
+    return ui.tags.td(
+        ui.div(
+            ui.tags.span(formatted),
+            ui.tags.span(f"{arrow} {abs(delta):,.0f}", class_=f"delta-badge {css_class}"),
+            class_="delta-cell",
+        )
+    )
+
+
 @module.ui
 def new_projects_ui() -> ui.Tag:
     return ui.div(
@@ -77,6 +99,7 @@ def new_projects_server(
     derived_fn: Callable,
     reload_fn: Callable,
     scenario_id_rv: reactive.Value,
+    prev_derived_fn: Callable,
 ) -> None:
     # Debounce state: pending ha changes
     _pending: reactive.Value[dict | None] = reactive.value(None)
@@ -99,6 +122,7 @@ def new_projects_server(
 
         variety_names = [v.name for v in state.varieties]
         derived = derived_fn()
+        prev_derived = prev_derived_fn()
 
         # Selector de variedad
         selector = ui.layout_columns(
@@ -165,6 +189,9 @@ def new_projects_server(
             sub_prod: dict[str, float] = {}
             sub_gan: dict[str, float] = {}
             sub_plant: dict[str, float] = {}
+            prev_sub_prod: dict[str, float] = {}
+            prev_sub_gan: dict[str, float] = {}
+            prev_sub_plant: dict[str, float] = {}
 
             if derived:
                 _bloque_result_key = {
@@ -178,17 +205,35 @@ def new_projects_server(
                 if bloque_key == "nuevos_terceros":
                     sub_plant = derived.get("plantines", {}).get(sel_variety, {})
 
-            def subtotal_row(label: str, unit: str, data: dict) -> ui.Tag:
-                cells = [ui.tags.td(label), ui.tags.td(unit)]
+            if prev_derived:
+                _bloque_result_key_prev = {
+                    "crecimiento_hf": "crecimiento",
+                    "recambio_varietal": "recambio",
+                    "nuevos_terceros": "nuevos_terceros",
+                }[bloque_key]
+                prev_bloque_data = prev_derived.get(_bloque_result_key_prev, {}).get(
+                    sel_variety, {}
+                )
+                prev_sub_prod = prev_bloque_data.get("produccion", {})
+                prev_sub_gan = prev_bloque_data.get("ganancia", {})
+                if bloque_key == "nuevos_terceros":
+                    prev_sub_plant = prev_derived.get("plantines", {}).get(sel_variety, {})
+
+            def subtotal_row(
+                label: str, unit: str, data: dict, prev_data: dict
+            ) -> ui.Tag:
+                cells: list[ui.Tag] = [ui.tags.td(label), ui.tags.td(unit)]
                 for s in ALL_SEASONS:
-                    cells.append(ui.tags.td(_fmt(data.get(s))))
+                    cells.append(_delta_cell(data.get(s), prev_data.get(s)))
                 return ui.tags.tr(*cells, class_="subtotal-row")
 
-            rows.append(subtotal_row("Sub total (producción)", "tn", sub_prod))
-            rows.append(subtotal_row("Sub total (ganancia)", "miles $", sub_gan))
+            rows.append(subtotal_row("Sub total (producción)", "tn", sub_prod, prev_sub_prod))
+            rows.append(subtotal_row("Sub total (ganancia)", "miles $", sub_gan, prev_sub_gan))
             if bloque_key == "nuevos_terceros":
                 rows.append(
-                    subtotal_row("Sub total (ganancia plantines)", "miles $", sub_plant)
+                    subtotal_row(
+                        "Sub total (ganancia plantines)", "miles $", sub_plant, prev_sub_plant
+                    )
                 )
 
             bloque_cards.append(

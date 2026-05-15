@@ -50,6 +50,7 @@ def rules_panel_server(
     state_fn: Callable,
     reload_fn: Callable,
     scenario_id_rv: reactive.Value,
+    snapshot_fn: Callable,
 ) -> None:
     @render.ui
     def rules_form() -> ui.Tag:
@@ -166,6 +167,7 @@ def rules_panel_server(
                 interes_financiamiento=float(interes_raw) / 100,
                 financiamiento_anios=int(fin_raw),
             )
+            snapshot_fn()   # captura derived actual antes de recomputar
             save_rules(sid, rules)
             reload_fn()
             _status_msg.set("✓ Reglas guardadas.")

@@ -1,17 +1,19 @@
 """
 Archivo: totals.py
-Fecha de modificación: 14/05/2026
+Fecha de modificación: 15/05/2026
 Autor: Alex Prieto
 
 Descripción:
-Módulo Shiny para la Sección 5: Tabla de Totales. Presenta una vista 
-consolidada de los resultados del escenario, agrupando volúmenes de fruta y 
-ganancias estimadas tanto para Hortifrut como para terceros.
+Módulo Shiny para la Sección 5: Tabla de Totales. Presenta una vista
+consolidada de los resultados del escenario, agrupando volúmenes de fruta y
+ganancias estimadas tanto para Hortifrut como para terceros. Incluye badges
+de delta (▲/▼) que muestran el impacto del último guardado de Reglas.
 
 Acciones Principales:
     - Renderizado de tabla de resumen ejecutivo (solo lectura).
     - Agrupación jerárquica de resultados (Hortifrut vs Terceros).
     - Actualización dinámica basada en el estado derivado (recálculo).
+    - Visualización de variación KPI respecto al snapshot previo de Sección 3.
 
 Estructura Interna:
     - `totals_ui`: Define la interfaz de la tabla de totales.
@@ -45,6 +47,28 @@ def _fmt(v: object) -> str:
         return "—"
 
 
+def _delta_cell(val: object, prev_val: object) -> ui.Tag:
+    """Celda con valor + badge de delta respecto al snapshot anterior."""
+    formatted = _fmt(val)
+    try:
+        v = float(val or 0)  # type: ignore[arg-type]
+        p = float(prev_val or 0)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return ui.tags.td(formatted)
+    delta = v - p
+    if abs(delta) < 0.5:
+        return ui.tags.td(formatted)
+    arrow = "▲" if delta > 0 else "▼"
+    css_class = "delta-up" if delta > 0 else "delta-down"
+    return ui.tags.td(
+        ui.div(
+            ui.tags.span(formatted),
+            ui.tags.span(f"{arrow} {abs(delta):,.0f}", class_=f"delta-badge {css_class}"),
+            class_="delta-cell",
+        )
+    )
+
+
 @module.ui
 def totals_ui() -> ui.Tag:
     return ui.div(
@@ -60,6 +84,7 @@ def totals_server(
     session: ui.session,
     *,
     derived_fn: Callable,
+    prev_derived_fn: Callable,
 ) -> None:
     @render.ui
     def totals_table() -> ui.Tag:
@@ -70,16 +95,24 @@ def totals_server(
                 class_="text-muted",
             )
 
+        prev_derived = prev_derived_fn()
+
         totales = derived.get("totales", {})
         hf_fruta = totales.get("hf_fruta", {})
         hf_gan = totales.get("hf_ganancia", {})
         ter_fruta = totales.get("terceros_fruta", {})
         ter_gan = totales.get("terceros_ganancia", {})
 
-        def row(label: str, unit: str, data: dict) -> ui.Tag:
-            cells = [ui.tags.td(label), ui.tags.td(unit)]
+        prev_totales = prev_derived.get("totales", {}) if prev_derived else {}
+        prev_hf_fruta = prev_totales.get("hf_fruta", {})
+        prev_hf_gan = prev_totales.get("hf_ganancia", {})
+        prev_ter_fruta = prev_totales.get("terceros_fruta", {})
+        prev_ter_gan = prev_totales.get("terceros_ganancia", {})
+
+        def row(label: str, unit: str, data: dict, prev_data: dict) -> ui.Tag:
+            cells: list[ui.Tag] = [ui.tags.td(label), ui.tags.td(unit)]
             for s in ALL_SEASONS:
-                cells.append(ui.tags.td(_fmt(data.get(s))))
+                cells.append(_delta_cell(data.get(s), prev_data.get(s)))
             return ui.tags.tr(*cells)
 
         return ui.div(
@@ -93,23 +126,17 @@ def totals_server(
                 ),
                 ui.tags.tbody(
                     ui.tags.tr(
-                        ui.tags.td(
-                            ui.tags.strong("Hortifrut"),
-                            colspan="8",
-                            style="background:#e8f5e9;",
-                        )
+                        ui.tags.td("Hortifrut", colspan="8"),
+                        class_="category-row",
                     ),
-                    row("  Total fruta", "tn", hf_fruta),
-                    row("  Ganancia", "miles $", hf_gan),
+                    row("  Total fruta", "tn", hf_fruta, prev_hf_fruta),
+                    row("  Ganancia", "miles $", hf_gan, prev_hf_gan),
                     ui.tags.tr(
-                        ui.tags.td(
-                            ui.tags.strong("Terceros"),
-                            colspan="8",
-                            style="background:#e8f5e9;",
-                        )
+                        ui.tags.td("Terceros", colspan="8"),
+                        class_="category-row",
                     ),
-                    row("  Total fruta", "tn", ter_fruta),
-                    row("  Ganancia", "miles $", ter_gan),
+                    row("  Total fruta", "tn", ter_fruta, prev_ter_fruta),
+                    row("  Ganancia", "miles $", ter_gan, prev_ter_gan),
                 ),
                 class_="hf-table",
             )

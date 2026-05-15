@@ -1,21 +1,22 @@
 """
 Archivo: base_table.py
-Fecha de modificación: 14/05/2026
+Fecha de modificación: 15/05/2026
 Autor: Alex Prieto
 
 Descripción:
-Módulo Shiny que renderiza la Sección 1: Tabla Base. Muestra los volúmenes 
-proyectados por proyecto y temporada, permitiendo la edición de una fila 
-de variación y el bloqueo de la base mediante confirmación.
+Módulo Shiny que renderiza la Sección 1: Tabla Base. Muestra los volúmenes
+proyectados por proyecto y temporada, permitiendo la edición de una fila
+de variación y el bloqueo de la base mediante confirmación. Incluye
+botón de plegar/expandir para ocultar la sección sin perder el estado.
 
 Acciones Principales:
     - Renderizado dinámico de la grilla de proyectos (tn por temporada).
     - Gestión de inputs numéricos para la fila de variación.
     - Implementación de lógica de bloqueo "Confirmar Base".
-    - Cálculo de subtotales y totales generales en tiempo real.
+    - Toggle de visibilidad de la sección (plegar/expandir).
 
 Estructura Interna:
-    - `base_table_ui`: Define la interfaz visual (título y contenedor).
+    - `base_table_ui`: Define la interfaz visual (header colapsable + contenedor).
     - `base_table_server`: Orquesta el estado reactivo y la renderización.
 
 Integración UI:
@@ -47,7 +48,7 @@ def _fmt(v: object) -> str:
 @module.ui
 def base_table_ui() -> ui.Tag:
     return ui.div(
-        ui.tags.span("SECCIÓN 1 · TABLA BASE", class_="section-title"),
+        ui.output_ui("base_table_header"),
         ui.output_ui("base_table_content"),
         ui.output_text("base_table_status"),
     )
@@ -64,10 +65,28 @@ def base_table_server(
     scenario_id_rv: reactive.Value,
 ) -> None:
     _confirmed: reactive.Value[bool] = reactive.value(False)
+    _collapsed: reactive.Value[bool] = reactive.value(False)
     _status_msg: reactive.Value[str] = reactive.value("")
 
     @render.ui
+    def base_table_header() -> ui.Tag:
+        collapsed = _collapsed.get()
+        btn_label = "Mostrar ▼" if collapsed else "Ocultar ▲"
+        return ui.div(
+            ui.tags.span("SECCIÓN 1 · TABLA BASE", class_="section-title"),
+            ui.input_action_button(
+                "toggle_collapse",
+                btn_label,
+                class_="btn-collapse",
+            ),
+            class_="section-header",
+        )
+
+    @render.ui
     def base_table_content() -> ui.Tag:
+        if _collapsed.get():
+            return ui.div()
+
         state = state_fn()
         if state is None:
             return ui.p("Cargando…", class_="text-muted")
@@ -75,7 +94,6 @@ def base_table_server(
         bt = state.base_table
         confirmed = _confirmed.get()
 
-        # Cabecera
         header = ui.tags.tr(
             ui.tags.th("Proyectos"),
             ui.tags.th("Unidad"),
@@ -83,7 +101,6 @@ def base_table_server(
             ui.tags.th("Total"),
         )
 
-        # Filas de proyectos (solo-lectura)
         project_rows = []
         for row in bt.rows:
             cells = [ui.tags.td(row.project_name), ui.tags.td(row.unit)]
@@ -92,12 +109,9 @@ def base_table_server(
             cells.append(ui.tags.td(_fmt(row.total), class_="fw-bold"))
             project_rows.append(ui.tags.tr(*cells))
 
-        # Fila Total
         totals_by_season: dict[str, float] = {}
         for s in ALL_SEASONS:
-            totals_by_season[s] = sum(
-                row.values.get(s, 0.0) for row in bt.rows
-            )
+            totals_by_season[s] = sum(row.values.get(s, 0.0) for row in bt.rows)
         grand_total = sum(totals_by_season.values())
         total_row_cells = [ui.tags.td(ui.tags.strong("Total")), ui.tags.td("tn")]
         for s in ALL_SEASONS:
@@ -105,14 +119,13 @@ def base_table_server(
         total_row_cells.append(ui.tags.td(ui.tags.strong(_fmt(grand_total))))
         total_row = ui.tags.tr(*total_row_cells, class_="total-row")
 
-        # Fila variación (editable o bloqueada)
         variation_cells = [ui.tags.td("variación"), ui.tags.td("")]
         if confirmed:
             for s in ALL_SEASONS:
                 variation_cells.append(ui.tags.td(_fmt(bt.variation.get(s, 0))))
             variation_cells.append(ui.tags.td(_fmt(sum(bt.variation.values()))))
         else:
-            for i, s in enumerate(ALL_SEASONS):
+            for s in ALL_SEASONS:
                 variation_cells.append(
                     ui.tags.td(
                         ui.input_numeric(
@@ -150,6 +163,11 @@ def base_table_server(
     @render.text
     def base_table_status() -> str:
         return _status_msg.get()
+
+    @reactive.effect
+    @reactive.event(input.toggle_collapse)
+    def _on_toggle() -> None:
+        _collapsed.set(not _collapsed.get())
 
     @reactive.effect
     @reactive.event(input.confirm_base)

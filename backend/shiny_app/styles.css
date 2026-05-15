@@ -1,69 +1,336 @@
+/* ─── Fuente ─────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ─── Variables ──────────────────────────────────────────────────────────── */
 :root {
-    --color-ciruela: #E7B6D1;
-    --color-verde: #0E7C3E;
+    --hf-green:          #0E7C3E;
+    --hf-green-hover:    #0b6834;
+    --hf-green-light:    #f0fdf4;
+    --hf-green-mid:      #bbdfc8;
+    --hf-ciruela:        #E7B6D1;
+    --hf-ciruela-bg:     #fdf4f9;
+    --hf-ciruela-border: #d4a0bf;
+
+    --text-primary:      #111827;
+    --text-secondary:    #6b7280;
+    --text-muted:        #9ca3af;
+
+    --border:            #e5e7eb;
+    --border-strong:     #d1d5db;
+    --bg-page:           #f8fafc;
+    --bg-card:           #ffffff;
+    --bg-row-hover:      #f9fafb;
+    --bg-subtotal:       #f3f4f6;
+    --bg-category:       var(--hf-green-light);
 }
 
-/* --- Tokens de color --- */
-.bg-ciruela { background-color: var(--color-ciruela) !important; }
-.text-verde  { color: var(--color-verde) !important; font-weight: 600; }
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+body,
+.shiny-page-fluid {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 13.5px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
-/* --- Tablas de datos --- */
+/* ─── Tokens de color (legacy) ───────────────────────────────────────────── */
+.bg-ciruela { background-color: var(--hf-ciruela) !important; }
+.text-verde  { color: var(--hf-green) !important; font-weight: 600; }
+
+/* ─── Cards de Shiny ─────────────────────────────────────────────────────── */
+.card {
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    background: var(--bg-card) !important;
+}
+
+/* ─── Encabezados de sección ─────────────────────────────────────────────── */
+.section-title {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--hf-green);
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--hf-green);
+}
+
+/* ─── Tablas de datos ─────────────────────────────────────────────────────── */
 .hf-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
 }
+
 .hf-table th {
-    background-color: var(--color-verde);
-    color: white;
-    padding: 6px 8px;
+    background-color: transparent;
+    color: var(--text-secondary);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 7px 10px;
     text-align: center;
     white-space: nowrap;
+    border-bottom: 2px solid var(--border-strong);
 }
+
+.hf-table th:first-child { text-align: left; }
+.hf-table th:nth-child(2) { text-align: left; }
+
 .hf-table td {
-    padding: 4px 8px;
+    padding: 6px 10px;
     text-align: right;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
 }
-.hf-table td:first-child { text-align: left; font-weight: 500; }
 
-/* --- Filas de subtotales --- */
-.subtotal-row { background-color: #f5f5f5 !important; font-style: italic; }
-.subtotal-row td { font-weight: 600; color: #333; }
+.hf-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
 
-/* --- Fila total --- */
-.total-row td { font-weight: bold; border-top: 2px solid var(--color-verde); }
+.hf-table td:nth-child(2) {
+    text-align: left;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
 
-/* --- Inputs ciruela (ha editables) --- */
+.hf-table tbody tr:hover td {
+    background-color: var(--bg-row-hover);
+}
+
+/* ─── Filas de categoría (Hortifrut / Terceros en Totales) ───────────────── */
+.hf-table .category-row td {
+    background-color: var(--bg-category) !important;
+    color: var(--hf-green);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-top: 1px solid var(--hf-green-mid);
+    border-bottom: 1px solid var(--hf-green-mid);
+}
+
+/* ─── Filas de subtotales ─────────────────────────────────────────────────── */
+.subtotal-row {
+    background-color: var(--bg-subtotal) !important;
+}
+.subtotal-row td {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-style: normal;
+}
+
+/* ─── Fila total ─────────────────────────────────────────────────────────── */
+.total-row td {
+    font-weight: 700;
+    color: var(--text-primary);
+    border-top: 2px solid var(--hf-green);
+}
+
+/* ─── Inputs ciruela (hectáreas editables) ───────────────────────────────── */
 .ha-input .shiny-input-number,
 .ha-input input[type=number] {
-    background-color: var(--color-ciruela) !important;
-    border: 1px solid #c9a0bd;
-    max-width: 85px;
+    background-color: var(--hf-ciruela-bg) !important;
+    border: 1px solid var(--hf-ciruela-border) !important;
+    border-radius: 4px !important;
+    max-width: 82px;
     text-align: right;
-    padding: 2px 6px;
+    padding: 3px 7px;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* --- Reglas verdes --- */
+.ha-input input[type=number]:focus {
+    border-color: var(--hf-green) !important;
+    box-shadow: 0 0 0 3px rgba(14, 124, 62, 0.1) !important;
+    outline: none;
+    background-color: #fff !important;
+}
+
+/* ─── Inputs de reglas ───────────────────────────────────────────────────── */
 .rules-input input[type=number] {
-    color: var(--color-verde) !important;
+    color: var(--hf-green) !important;
     font-weight: 600;
-    border-bottom: 2px solid var(--color-verde);
+    border: none !important;
+    border-bottom: 2px solid var(--hf-green-mid) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 2px 4px;
+    transition: border-color 0.15s ease;
 }
 
-/* --- Encabezados de sección --- */
-.section-title {
-    background-color: var(--color-verde);
-    color: white;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-weight: bold;
-    margin-bottom: 8px;
+.rules-input input[type=number]:focus {
+    border-bottom-color: var(--hf-green) !important;
+    outline: none;
+    box-shadow: none !important;
+}
+
+/* ─── Labels de inputs ───────────────────────────────────────────────────── */
+.shiny-input-select label,
+.shiny-input-number label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
     display: block;
 }
 
-/* --- Variedad bloqueada (solo-lectura) --- */
-.variety-readonly { opacity: 0.65; pointer-events: none; }
+/* ─── Selectores (dropdowns) ─────────────────────────────────────────────── */
+.shiny-input-select select,
+select.form-control,
+select.form-select {
+    font-size: 0.8125rem;
+    border: 1px solid var(--border-strong) !important;
+    border-radius: 4px !important;
+    color: var(--text-primary);
+    background-color: #fff;
+    padding: 4px 8px;
+    transition: border-color 0.15s;
+}
 
-/* --- Panel de notificaciones --- */
-.hf-warning { color: #856404; font-size: 0.85rem; margin-top: 4px; }
+.shiny-input-select select:focus,
+select.form-control:focus {
+    border-color: var(--hf-green) !important;
+    box-shadow: 0 0 0 3px rgba(14, 124, 62, 0.1) !important;
+    outline: none;
+}
+
+/* ─── Botón Guardar Reglas ───────────────────────────────────────────────── */
+.btn-success {
+    background-color: var(--hf-green) !important;
+    border-color: var(--hf-green) !important;
+    color: #fff !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em;
+    padding: 5px 14px !important;
+    border-radius: 4px !important;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    background-color: var(--hf-green-hover) !important;
+    border-color: var(--hf-green-hover) !important;
+    opacity: 1 !important;
+}
+
+/* ─── Variedad bloqueada (solo lectura) ──────────────────────────────────── */
+.variety-readonly {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ─── Avisos / warnings ──────────────────────────────────────────────────── */
+.hf-warning {
+    display: inline-block;
+    color: #92400e;
+    background-color: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+/* ─── Texto muted de Shiny ───────────────────────────────────────────────── */
+.text-muted {
+    color: var(--text-muted) !important;
+    font-size: 0.8rem;
+}
+
+/* ─── Estado de guardado en reglas ───────────────────────────────────────── */
+#rules-rules_status {
+    font-size: 0.8rem;
+    color: var(--hf-green);
+    font-weight: 500;
+    margin-top: 6px;
+    display: block;
+}
+
+/* ─── Header principal de la app ─────────────────────────────────────────── */
+.hf-app-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.hf-app-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--hf-green);
+    letter-spacing: -0.01em;
+    margin: 0 0 8px 0;
+}
+
+/* ─── Header de sección colapsable ───────────────────────────────────────── */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--hf-green);
+}
+
+.section-header .section-title {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.btn-collapse {
+    background: none;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 2px 9px;
+    cursor: pointer;
+    line-height: 1.5;
+    flex-shrink: 0;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-collapse:hover {
+    border-color: var(--hf-green);
+    color: var(--hf-green);
+}
+
+/* ─── Delta KPI badges ───────────────────────────────────────────────────── */
+.delta-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.delta-badge {
+    display: inline-block;
+    font-size: 0.67rem;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+}
+
+.delta-up   { color: #16a34a; }
+.delta-down { color: #dc2626; }
