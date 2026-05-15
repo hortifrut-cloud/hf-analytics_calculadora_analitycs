@@ -22,7 +22,10 @@ Ejemplo de Integración:
     SessionFactory = make_session_factory(engine)
 """
 
+import socket
+
 from sqlalchemy import Engine, create_engine
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool, StaticPool
 
@@ -34,6 +37,24 @@ def _normalize_url(url: str) -> str:
             "postgres://", "postgresql+psycopg://", 1
         )
     return url
+
+
+def _supabase_connect_args(url: str) -> dict:
+    """
+    Construye connect_args con hostaddr pre-resuelto para evitar que psycopg3
+    haga DNS lookup dentro del event loop de asyncio (bug psycopg3 3.3.x + Python 3.13).
+
+    Pre-resolver el host garantiza que conninfo_attempts recibe hostaddr y omite
+    la llamada a socket.getaddrinfo que falla en el contexto WebSocket de Shiny.
+    """
+    parsed = make_url(url)
+    host = parsed.host or ""
+    try:
+        infos = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
+        hostaddr = infos[0][4][0]
+    except OSError:
+        hostaddr = host
+    return {"hostaddr": hostaddr, "sslmode": "require"}
 
 
 def make_engine(url: str) -> Engine:
@@ -48,7 +69,12 @@ def make_engine(url: str) -> Engine:
     """
     url = _normalize_url(url)
     if "pooler.supabase.com" in url:
-        return create_engine(url, poolclass=NullPool, future=True)
+        return create_engine(
+            url,
+            poolclass=NullPool,
+            future=True,
+            connect_args=_supabase_connect_args(url),
+        )
     if url.startswith("sqlite"):
         kwargs: dict = {"connect_args": {"check_same_thread": False}, "future": True}
         if ":memory:" in url:
