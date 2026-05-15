@@ -1432,3 +1432,70 @@
 ---
 
 > **Próximo paso recomendado.** Comenzar por Fase 0 (`T0.1 → T0.6`) marcando cada Acción `[/]` al iniciarla y `[X]` al cumplir su AC. Cuando todas las Acciones de una Tarea estén `[X]`, marcar la Tarea `[X]` y validar el AC de Tarea. Cuando todas las Tareas de una Fase estén `[X]`, marcar la Fase `[X]`.
+
+---
+
+## [/] Fase 11 — Debug Pre-Deploy y Optimización de Reactividad
+
+**Objetivo:** Corregir datos de seed, resolver el cuelgue en Sección 2 y optimizar la capa de persistencia antes del deploy a ShinyApps.io.
+
+---
+
+### [X] T11.1 — Corrección del seed con datos reales de referencia
+
+#### [X] A11.1.1 — Actualizar `scratch/seed_db.py` con datos de imagen1-6.csv
+
+- **Proceso:**
+  - Reescritura completa de `seed_db.py` con datos exactos de la documentación.
+  - Tabla Base (imagen1.csv): 3 proyectos — Trujillo (37-42 tn/T), Olmos (8 tn/T), Productores Terceros (14-15 tn/T), variación (0, -7, -7, -7, -7, -7).
+  - Variedad 1 (imagen2.csv): productividad 2-5 kg/planta, densidad 6500 pl/ha, precio 4 FOB/kg, recaudación 100/100/90/80/70/60/60%.
+  - Reglas (imagen5.csv): royaltie_fob=0.12, costo_plantines=3.5, interés=0, financiamiento=5 años.
+  - Nuevos Proyectos (imagen6.csv): CHAO 250 ha T2627, OLMOS 200 ha T2728, recambio OLMOS 50 ha, Talsa 100+100 ha, Diamond Bridge 25 ha.
+  - Delete SQL raw en orden FK para limpiar datos anteriores sin violaciones de restricción.
+- **AC:** Seed corre sin errores, crea escenario con ID=4, 1 variedad, 3 filas de Tabla Base. **COMPLETADO 15/05/2026.**
+
+---
+
+### [X] T11.2 — Fix del cuelgue: eager loading en `ScenarioRepo.get()`
+
+#### [X] A11.2.1 — Agregar `selectinload` en la query de `ScenarioRepo.get()`
+
+- **Proceso:** Reemplazado `session.get(Scenario, scenario_id)` (lazy) por `session.query(...).options(selectinload(...))` con 6 relaciones eager-loaded en un solo round-trip.
+- **AC:** `load_scenario()` ejecuta ~6 queries en lugar de ~14+. **COMPLETADO 15/05/2026.**
+
+---
+
+### [X] T11.3 — Fix del cuelgue: bulk delete + bulk insert en `update_variety_params`
+
+#### [X] A11.3.1 — Optimizar `state.py` con operaciones bulk
+
+- **Proceso:** Reemplazado loop individual de `session.delete(p)` + `session.add(VarietyParam(...))` por `sql_delete(VarietyParam).where(...)` + `bulk_insert_mappings` — reduce de 14 queries a 2 queries.
+- **AC:** "Guardar cambios" en Sección 2 completa sin cuelgue. **COMPLETADO 15/05/2026.**
+
+---
+
+### [X] T11.4 — Índices de performance en DB
+
+#### [X] A11.4.1 — Crear índices FK en Supabase
+
+- **Proceso:** Creados `idx_variety_param_variety_id`, `idx_base_table_value_row_id`, `idx_new_project_ha_subrow_id`, `idx_season_scenario_id` via SQL directo.
+- **AC:** Queries de join bajan de >200 ms a <50 ms. **COMPLETADO 15/05/2026.**
+
+---
+
+### [X] T11.5 — Valores default en formulario de nueva variedad
+
+#### [X] A11.5.1 — Constante `DEFAULT_VARIETY_PARAMS` en `varieties_panel.py`
+
+- **Proceso:** Definida constante `DEFAULT_VARIETY_PARAMS` con los valores exactos de imagen2.csv; pasada como `default_vals` al formulario de nueva variedad.
+- **AC:** Al hacer clic en "+ Agregar variedad", los campos muestran los defaults del plan de negocio. **COMPLETADO 15/05/2026.**
+
+---
+
+### [X] T11.6 — Fix de `DuplicatePreparedStatement` con Supabase Transaction Pooler
+
+#### [X] A11.6.1 — Fix en `session.py` con event listener + `prepare_threshold=0`
+
+- **Proceso:** Añadido event listener `connect` que: (1) setea `dbapi_conn.prepare_threshold = 0` para deshabilitar caché de prepared statements en psycopg3; (2) ejecuta `DEALLOCATE ALL` con `prepare=False` para limpiar statements residuales del pooler.
+- **AC:** Seed y ScenarioRepo.get() con `selectinload` funcionan sin `DuplicatePreparedStatement`. **COMPLETADO 15/05/2026.**
+
