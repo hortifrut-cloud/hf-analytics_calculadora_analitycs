@@ -1,6 +1,23 @@
-"""Motor §3.7 — Bloque 2: Recambio varietal (B2).
+"""
+Archivo: recambio.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Estructura idéntica a crecimiento_hf; diferencia solo semántica (kind=RECAMBIO_VARIETAL).
+Descripción:
+Motor de cálculo para el Bloque 2 (Recambio Varietal). Proyecta la producción 
+y ganancia para renovaciones de variedades en terrenos de Hortifrut.
+
+Acciones Principales:
+    - Agregación estacional de hectáreas plantadas en el Bloque 2.
+    - Aplicación de desfase fenológico.
+    - Cálculo de producción y ganancia consolidada por variedad.
+
+Estructura Interna:
+    - `compute_recambio`: Función de cálculo para el bloque de recambio.
+
+Ejemplo de Integración:
+    from backend.logic.recambio import compute_recambio
+    res = compute_recambio(scenario, calculos)
 """
 
 from backend.domain.enums import ALL_SEASONS, BloqueKind
@@ -16,7 +33,16 @@ def compute_recambio(
     scenario: ScenarioState,
     calculos: dict[tuple[str, int], CalcVarRow],
 ) -> dict[str, dict[str, dict[str, float]]]:
-    """Devuelve subtotales {variety_name: {'produccion': ..., 'ganancia': ...}}."""
+    """
+    Calcula los indicadores del bloque de Recambio Varietal.
+
+    Args:
+        scenario (ScenarioState): Estado del escenario.
+        calculos (dict): Rendimientos por hectárea pre-calculados.
+
+    Returns:
+        dict: Subtotales estacionales por variedad.
+    """
     result: dict[str, dict[str, dict[str, float]]] = {}
 
     for variety in scenario.varieties:

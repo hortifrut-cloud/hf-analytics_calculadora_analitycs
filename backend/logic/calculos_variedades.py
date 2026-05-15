@@ -1,9 +1,25 @@
-"""Motor §3.4 — Tabla cálculos variedades.
+"""
+Archivo: calculos_variedades.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Para cada (variety, plant_year) calcula productividades y ganancias por ha
-para los tres tipos de productor: HF_INTERNA, HF_TERCEROS, TERCEROS.
-Todas las magnitudes en unidades base (Kg/ha, FOB/ha) — la división /1000 se
-aplica más tarde al construir la matriz subyacente.
+Descripción:
+Motor de cálculo técnico-económico por variedad. Calcula las productividades 
+(Kg/ha) y ganancias (FOB/ha) proyectadas para cada variedad y año de planta, 
+considerando los tres tipos de productores definidos en el negocio.
+
+Acciones Principales:
+    - Cálculo de Kg/ha y FOB/ha para Hortifrut Interna.
+    - Cálculo de esquemas de recaudación y venta propia para HF Terceros.
+    - Cálculo de márgenes para productores Terceros externos.
+
+Estructura Interna:
+    - `CalcVarRow`: Data class con los resultados de las 3 columnas de productor.
+    - `compute_calculos_variedades`: Genera el mapeo variedadxAño con sus métricas.
+
+Ejemplo de Integración:
+    from backend.logic.calculos_variedades import compute_calculos_variedades
+    res = compute_calculos_variedades(varieties, rules)
 """
 
 from dataclasses import dataclass
@@ -13,7 +29,10 @@ from backend.domain.inputs import Rules, Variety
 
 @dataclass(frozen=True)
 class CalcVarRow:
-    """Resultados por (variety_name, plant_year) — las 3 columnas de productor."""
+    """
+    Estructura de datos que almacena los resultados técnicos y económicos 
+    para una combinación específica de variedad y año de planta.
+    """
 
     # HF Interna (§3.4.1)
     prod_hfi: float  # Kg/ha
@@ -34,7 +53,17 @@ def compute_calculos_variedades(
     varieties: list[Variety],
     rules: Rules,
 ) -> dict[tuple[str, int], CalcVarRow]:
-    """Devuelve {(variety_name, plant_year): CalcVarRow} para cada variedad×año."""
+    """
+    Calcula la matriz de rendimientos y FOB por hectárea para todas las 
+    variedades y años de vida del cultivo.
+
+    Args:
+        varieties (list[Variety]): Lista de variedades con sus parámetros técnicos.
+        rules (Rules): Reglas de negocio globales (ej. % de royalty).
+
+    Returns:
+        dict[tuple[str, int], CalcVarRow]: Mapeo indexado por (nombre_variedad, año_planta).
+    """
     R = rules.royaltie_fob
     result: dict[tuple[str, int], CalcVarRow] = {}
 

@@ -1,7 +1,24 @@
-"""Motor §3.9 — Sub-bloque Terceros para Totales.
+"""
+Archivo: terceros_totales.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Usa solo hectáreas de B3; campos prod_terceros y (gan_venta_hf_terceros + gan_venta_propia_terceros).
-Nota: para años con pct_recaudacion=1.0 (ej. año 1 y 2 de V1), prod_terceros=0 → producción=0.
+Descripción:
+Motor de cálculo para el volumen y margen de productores terceros externos 
+dentro del Bloque 3. Proyecta la fruta que no es propiedad de Hortifrut pero 
+que forma parte del ecosistema del escenario.
+
+Acciones Principales:
+    - Agregación estacional de hectáreas de terceros.
+    - Aplicación de desfase fenológico.
+    - Cálculo de producción (KTM) y ganancia (MUSD) para el productor tercero.
+
+Estructura Interna:
+    - `compute_terceros_totales`: Calcula los subtotales de fruta y ganancia de terceros.
+
+Ejemplo de Integración:
+    from backend.logic.terceros_totales import compute_terceros_totales
+    res = compute_terceros_totales(scenario, calculos)
 """
 
 from backend.domain.enums import ALL_SEASONS, BloqueKind
@@ -17,9 +34,15 @@ def compute_terceros_totales(
     scenario: ScenarioState,
     calculos: dict[tuple[str, int], CalcVarRow],
 ) -> dict[str, dict[str, dict[str, float]]]:
-    """Devuelve subtotales {variety_name: {'produccion': ..., 'ganancia': ...}}.
+    """
+    Calcula los subtotales de producción y ganancia para los productores terceros.
 
-    Producción = prod_terceros; Ganancia = gan_venta_hf_terceros + gan_venta_propia_terceros.
+    Args:
+        scenario (ScenarioState): Estado del escenario.
+        calculos (dict): Diccionario de rendimientos y FOB por hectárea.
+
+    Returns:
+        dict: Subtotales estacionales de terceros por variedad.
     """
     result: dict[str, dict[str, dict[str, float]]] = {}
 

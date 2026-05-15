@@ -1,9 +1,25 @@
-"""Motor §3.8.2 — Ganancia Plantines (B3 exclusivo).
+"""
+Archivo: plantines.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Fórmula:  GP(n, t) = ha(t-n) × Densidad(n) × Costo_Plantines / Financiamiento / 1000
-Máscara:  GP(n, t) = 0  si  n > Financiamiento_anios
+Descripción:
+Motor de cálculo para la ganancia por venta de plantines en el Bloque 3 
+(Nuevos Terceros). Modela el ingreso por la venta y financiamiento de material 
+genético a productores externos.
 
-Hook futuro: cuota_amortizacion() para interés > 0 (no usada aún).
+Acciones Principales:
+    - Cálculo de la cuota de amortización por hectárea según financiamiento.
+    - Aplicación de máscara temporal para limitar el cobro a los años de financiamiento.
+    - Proyección estacional de ingresos por plantines (MUSD).
+
+Estructura Interna:
+    - `cuota_amortizacion`: Calcula el pago periódico del capital.
+    - `compute_plantines`: Orquestador de cálculos para el bloque de plantines.
+
+Ejemplo de Integración:
+    from backend.logic.plantines import compute_plantines
+    res = compute_plantines(scenario, calculos)
 """
 
 from backend.domain.enums import ALL_SEASONS, BloqueKind
@@ -16,7 +32,17 @@ SEASONS = ALL_SEASONS
 
 
 def cuota_amortizacion(capital: float, i: float, n: int) -> float:
-    """Cuota fija de amortización.  Cuota = Capital × i / (1 − (1+i)^(−n))."""
+    """
+    Calcula la cuota periódica de amortización de un préstamo.
+
+    Args:
+        capital (float): Monto total a financiar.
+        i (float): Tasa de interés periódica.
+        n (int): Número de periodos de pago.
+
+    Returns:
+        float: Valor de la cuota constante.
+    """
     if i == 0.0:
         return capital / n
     return capital * i / (1.0 - (1.0 + i) ** (-n))
@@ -26,7 +52,17 @@ def compute_plantines(
     scenario: ScenarioState,
     calculos: dict[tuple[str, int], CalcVarRow],
 ) -> dict[str, dict[str, float]]:
-    """Devuelve subtotales plantines {variety_name: {season: valor_miles}}."""
+    """
+    Calcula los subtotales de ingresos por plantines para el bloque de 
+    Nuevos Productores Terceros.
+
+    Args:
+        scenario (ScenarioState): Estado del escenario.
+        calculos (dict): Diccionario de parámetros técnicos.
+
+    Returns:
+        dict: Mapeo de variedad a ingresos estacionales por plantines.
+    """
     rules: Rules = scenario.rules
     fin = rules.financiamiento_anios
     result: dict[str, dict[str, float]] = {}

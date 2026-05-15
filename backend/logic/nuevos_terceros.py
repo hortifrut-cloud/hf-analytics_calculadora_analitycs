@@ -1,4 +1,25 @@
-"""Motor §3.8.1 — Bloque 3: Nuevos Prod Terceros (B3) — producción y ganancia HF."""
+"""
+Archivo: nuevos_terceros.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Motor de cálculo para el Bloque 3 (Nuevos Productores Terceros). Calcula la 
+producción y la ganancia por royalties generada por plantaciones externas 
+gestionadas bajo los modelos de negocio de Hortifrut.
+
+Acciones Principales:
+    - Agregación estacional de hectáreas plantadas por terceros.
+    - Aplicación de desfase fenológico basado en la edad de la planta.
+    - Cálculo de producción (KTM) y ganancia por royalties (MUSD) para Hortifrut.
+
+Estructura Interna:
+    - `compute_nuevos_terceros`: Función de cálculo para el bloque de terceros externos.
+
+Ejemplo de Integración:
+    from backend.logic.nuevos_terceros import compute_nuevos_terceros
+    res = compute_nuevos_terceros(scenario, calculos)
+"""
 
 from backend.domain.enums import ALL_SEASONS, BloqueKind
 from backend.domain.inputs import ScenarioState
@@ -13,10 +34,16 @@ def compute_nuevos_terceros(
     scenario: ScenarioState,
     calculos: dict[tuple[str, int], CalcVarRow],
 ) -> dict[str, dict[str, dict[str, float]]]:
-    """Devuelve subtotales {variety_name: {'produccion': ..., 'ganancia': ...}}.
+    """
+    Calcula la producción y ganancia FOB (royalties) para el bloque de 
+    Nuevos Productores Terceros.
 
-    Producción usa prod_hft (§3.8.1).
-    Ganancia = gan_venta_propia_hft + gan_venta_productor_hft (suma de royalties).
+    Args:
+        scenario (ScenarioState): Estado del escenario.
+        calculos (dict): Diccionario de rendimientos y FOB por hectárea.
+
+    Returns:
+        dict: Subtotales de producción y ganancia por variedad y temporada.
     """
     result: dict[str, dict[str, dict[str, float]]] = {}
 

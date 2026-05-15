@@ -1,11 +1,26 @@
-"""Orquestador §3 — recompute(scenario) -> DerivedState.
+"""
+Archivo: recompute.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Orden topológico:
-  calculos_variedades
-  → crecimiento_hf, recambio, nuevos_terceros  (independientes)
-  → plantines
-  → terceros_totales
-  → totales
+Descripción:
+Orquestador principal del motor de cálculo. Coordina la ejecución secuencial
+de todos los módulos de lógica siguiendo un orden topológico estricto para
+garantizar la integridad de los resultados derivados.
+
+Orden de Ejecución:
+    1. calculos_variedades (Base técnica)
+    2. crecimiento_hf, recambio, nuevos_terceros (Capas de producción)
+    3. plantines (Costo de establecimiento)
+    4. terceros_totales (Segregación de fruta)
+    5. totales (Consolidación final)
+
+Estructura Interna:
+    - `recompute`: Función principal que transforma un ScenarioState en un diccionario de resultados.
+
+Ejemplo de Integración:
+    from backend.logic.recompute import recompute
+    results = recompute(scenario_state)
 """
 
 from typing import Any
@@ -21,11 +36,15 @@ from backend.logic.totales import compute_totales
 
 
 def recompute(scenario: ScenarioState) -> dict[str, Any]:
-    """Ejecuta todo el motor y devuelve un dict con todos los sub-resultados.
+    """
+    Ejecuta el motor analítico completo y consolida todos los sub-resultados.
 
-    Retorna un dict plano (no DerivedState aún — ese modelo se actualiza en Fase 3).
-    Keys: 'calculos', 'crecimiento', 'recambio', 'nuevos_terceros',
-          'plantines', 'terceros_totales', 'totales'.
+    Args:
+        scenario (ScenarioState): Estado inmutable del escenario a procesar.
+
+    Returns:
+        dict[str, Any]: Diccionario plano con las llaves 'calculos', 'crecimiento', 
+        'recambio', 'nuevos_terceros', 'plantines', 'terceros_totales' y 'totales'.
     """
     calculos = compute_calculos_variedades(list(scenario.varieties), scenario.rules)
 

@@ -1,7 +1,29 @@
-"""Motor §3.5 — Desfase fenológico (lag t → t+n).
+"""
+Archivo: lag_matrix.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-M[n, t] = ha(t − n): las hectáreas plantadas n temporadas antes de t.
-Implementado con DataFrame.shift(n) sobre el eje de temporadas.
+Descripción:
+Motor de desfase fenológico. Implementa la lógica de retraso temporal (lag) 
+para proyectar el impacto de las hectáreas plantadas en temporadas futuras, 
+basándose en el ciclo de vida de la planta (1 a 7 años).
+
+Sustentación Científica:
+El cálculo sigue el principio de M[n, t] = ha(t - n), donde 'n' es la edad 
+de la planta y 't' es la temporada actual. Se utiliza el método `shift` de 
+Pandas para desplazar las series de tiempo eficientemente.
+
+Acciones Principales:
+    - Construcción de matrices de desfase para indicadores técnicos.
+    - Agregación estacional de hectáreas por bloque y variedad.
+
+Estructura Interna:
+    - `build_lag_matrix`: Crea el DataFrame con la estructura plant_year x season.
+    - `aggregate_ha`: Consolida la superficie plantada desde las celdas de entrada.
+
+Ejemplo de Integración:
+    from backend.logic.lag_matrix import build_lag_matrix
+    matrix = build_lag_matrix(ha_dict, max_plant_year=7)
 """
 
 import pandas as pd
@@ -15,9 +37,17 @@ def build_lag_matrix(
     max_plant_year: int,
     seasons: list[str] | None = None,
 ) -> pd.DataFrame:
-    """Devuelve DataFrame con filas=plant_year (1..max) y columnas=seasons.
+    """
+    Construye una matriz donde las filas representan la edad de la planta 
+    y las columnas las temporadas de planificación.
 
-    M[n, t] = ha en season (t - n), o 0 si t-n está fuera del rango.
+    Args:
+        ha_by_season (dict[str, float]): Diccionario con hectáreas plantadas por temporada.
+        max_plant_year (int): Edad máxima de la planta (usualmente 7).
+        seasons (list[str], opcional): Lista ordenada de temporadas. Por defecto usa ALL_SEASONS.
+
+    Returns:
+        pd.DataFrame: Matriz de desfase con índices 'plant_year' y columnas 'season'.
     """
     if seasons is None:
         seasons_list: list[str] = list(ALL_SEASONS)
@@ -40,7 +70,19 @@ def aggregate_ha(
     variety_name: str,
     seasons: list[str] | None = None,
 ) -> dict[str, float]:
-    """Suma ha de todos los sub-proyectos de un bloque/variedad por temporada."""
+    """
+    Agrupa y suma la superficie (ha) de todos los sub-proyectos para una 
+    combinación específica de bloque y variedad.
+
+    Args:
+        cells (list[NewProjectCell]): Lista de celdas con datos de hectáreas.
+        bloque (BloqueKind): Tipo de bloque a filtrar.
+        variety_name (str): Nombre de la variedad a filtrar.
+        seasons (list[str], opcional): Lista de temporadas objetivo.
+
+    Returns:
+        dict[str, float]: Mapeo de temporada a total de hectáreas agregadas.
+    """
     if seasons is None:
         seasons_list: list[str] = list(ALL_SEASONS)
     else:

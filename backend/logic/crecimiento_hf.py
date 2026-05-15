@@ -1,7 +1,24 @@
-"""Motor §3.6 — Bloque 1: Crecimiento Hortifrut (B1).
+"""
+Archivo: crecimiento_hf.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Sub-proyectos: CHAO, OLMOS (extensible).
-Usa prod_hfi y gan_hfi de CalcVarRow.
+Descripción:
+Motor de cálculo para el Bloque 1 (Crecimiento Hortifrut). Proyecta la 
+producción y ganancia FOB para las nuevas plantaciones en terrenos propios 
+de Hortifrut (ej. Chao, Olmos).
+
+Acciones Principales:
+    - Agregación estacional de hectáreas plantadas en el Bloque 1.
+    - Aplicación de la matriz de desfase para determinar la edad de la planta.
+    - Cálculo de producción (KTM) y ganancia (MUSD) por variedad.
+
+Estructura Interna:
+    - `compute_crecimiento_hf`: Calcula los subtotales estacionales para el bloque.
+
+Ejemplo de Integración:
+    from backend.logic.crecimiento_hf import compute_crecimiento_hf
+    subtotals = compute_crecimiento_hf(scenario, calculos_dict)
 """
 
 from backend.domain.enums import ALL_SEASONS, BloqueKind
@@ -17,9 +34,16 @@ def compute_crecimiento_hf(
     scenario: ScenarioState,
     calculos: dict[tuple[str, int], CalcVarRow],
 ) -> dict[str, dict[str, dict[str, float]]]:
-    """Devuelve subtotales {variety_name: {'produccion': {season: val}, 'ganancia': {season: val}}}.
+    """
+    Calcula los subtotales de producción y ganancia para el bloque de 
+    Crecimiento Hortifrut.
 
-    Valores en miles de toneladas / miles de dólares.
+    Args:
+        scenario (ScenarioState): Estado del escenario con las celdas de proyectos.
+        calculos (dict): Diccionario de rendimientos por variedad y año.
+
+    Returns:
+        dict: Estructura {variedad: {'produccion': {temporada: valor}, 'ganancia': {...}}}.
     """
     result: dict[str, dict[str, dict[str, float]]] = {}
 
