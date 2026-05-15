@@ -113,9 +113,10 @@ def _variety_form(
     for field, label, unit in _PARAM_FIELDS:
         cells = [ui.tags.td(label), ui.tags.td(unit)]
         for y in _YEARS:
+            # IMPORTANTE: el caller debe pasar pct_recaudacion ya en escala UI
+            # (0..100). Esta función no aplica ninguna conversión para evitar
+            # doble multiplicación cuando los defaults ya están en escala UI.
             default_v = dv.get(f"{field}_{y}", None)
-            if field == "pct_recaudacion" and default_v is not None:
-                default_v = round(default_v * 100, 2)
             cells.append(
                 ui.tags.td(
                     ui.input_numeric(
@@ -125,7 +126,7 @@ def _variety_form(
                         min=0,
                         max=(100 if field == "pct_recaudacion" else None),
                         step=(0.5 if field == "pct_recaudacion" else 1),
-                        width="75px",
+                        width="95px",
                     )
                 )
             )
@@ -178,6 +179,16 @@ def varieties_panel_server(
         varieties = state.varieties
         variety_names = [v.name for v in varieties]
 
+        # Preservar la selección actual del filtro de variedad para que el
+        # re-render del UI (por cambio de modo, reload, etc.) no la resetee
+        # a la primera de la lista. Mismo patrón usado en new_projects.py.
+        try:
+            sel_current = input.selected_variety()
+        except Exception:
+            sel_current = variety_names[0] if variety_names else ""
+        if not sel_current or sel_current not in variety_names:
+            sel_current = variety_names[0] if variety_names else ""
+
         # --- Selector de variedad existente ---
         selector_row = ui.layout_columns(
             ui.input_action_button(
@@ -189,8 +200,8 @@ def varieties_panel_server(
                 ui.input_select(
                     "selected_variety",
                     "Variedad:",
-                    choices={"": "— seleccionar —", **{n: n for n in variety_names}},
-                    selected=variety_names[0] if variety_names else "",
+                    choices={n: n for n in variety_names},
+                    selected=sel_current,
                 )
                 if variety_names
                 else ui.p("Sin variedades aún.", class_="text-muted")
@@ -222,13 +233,18 @@ def varieties_panel_server(
             return ui.div(selector_row, form, status)
 
         if mode == "edit" and variety_names:
-            sel = input.selected_variety() if variety_names else ""
+            sel = sel_current
             v_obj = next((v for v in varieties if v.name == sel), None)
             if v_obj:
                 dv: dict = {}
                 for p in v_obj.params:
                     for field, _, _ in _PARAM_FIELDS:
-                        dv[f"{field}_{p.plant_year}"] = getattr(p, field)
+                        val = getattr(p, field)
+                        # pct_recaudacion se almacena en DB como 0..1; el UI
+                        # lo muestra en 0..100.
+                        if field == "pct_recaudacion":
+                            val = round(val * 100, 2)
+                        dv[f"{field}_{p.plant_year}"] = val
                 form = ui.card(
                     ui.card_header(f"Editando: {sel}"),
                     _variety_form("edit_", default_vals=dv, name_val=sel, readonly=True),
@@ -270,7 +286,10 @@ def varieties_panel_server(
             dv = {}
             for p in v.params:
                 for field, _, _ in _PARAM_FIELDS:
-                    dv[f"{field}_{p.plant_year}"] = getattr(p, field)
+                    val = getattr(p, field)
+                    if field == "pct_recaudacion":
+                        val = round(val * 100, 2)
+                    dv[f"{field}_{p.plant_year}"] = val
             # Sanitizar v.name para usarlo como prefijo de IDs HTML (solo letras, numeros, guiones bajos)
             safe_name = re.sub(r"[^a-zA-Z0-9_]", "_", v.name)
             # Show read-only table inside accordion
