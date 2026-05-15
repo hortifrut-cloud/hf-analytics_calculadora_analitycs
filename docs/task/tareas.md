@@ -303,7 +303,7 @@
 
 ---
 
-## [/] Fase 1 — Modelo de dominio puro
+## [X] Fase 1 — Modelo de dominio puro
 
 - **Objetivo:** clases Pydantic inmutables para `ScenarioState` y `DerivedState`. Frontera limpia entre DB ↔ motor ↔ UI.
 - **AC global:**
@@ -347,13 +347,13 @@
 
 ---
 
-### [ ] T1.2 — Modelos de inputs (Pydantic)
+### [X] T1.2 — Modelos de inputs (Pydantic)
 
 - **Objetivo:** representar la entrada total del usuario.
 - **AC:** instanciar el escenario UI.png desde un dict canónico produce un objeto válido sin warnings.
 - **Referencia:** `description_proyecto.md` §3.1, §3.2, §3.3.
 
-#### [ ] A1.2.1 — `BaseTable` (imagen 1)
+#### [X] A1.2.1 — `BaseTable` (imagen 1)
 
 - **Objetivo:** modelar la Tabla Base con `variación` como input.
 - **Output:** clases en `backend/domain/inputs.py`.
@@ -372,7 +372,7 @@
 - **Tests:** crear la Tabla Base de imagen 1 e instanciarla.
 - **AC:** `sum(row.values.values()) ≈ row.total` para cada fila (validator con tolerancia 1).
 
-#### [ ] A1.2.2 — `Variety` + `VarietyParamRow` (imagen 2/3)
+#### [X] A1.2.2 — `Variety` + `VarietyParamRow` (imagen 2/3)
 
 - **Lógica:**
   ```python
@@ -397,7 +397,7 @@
 - **Tests:** crear V1 canónica; test negativo con 6 años → falla.
 - **AC:** ambos casos cumplen.
 
-#### [ ] A1.2.3 — `Rules` (imagen 5)
+#### [X] A1.2.3 — `Rules` (imagen 5)
 
 - **Lógica:**
   ```python
@@ -410,7 +410,7 @@
 - **Tests:** defaults instanciables sin argumentos.
 - **AC:** `Rules().royaltie_fob == 0.12`.
 
-#### [ ] A1.2.4 — `NewProjectCell`
+#### [X] A1.2.4 — `NewProjectCell`
 
 - **Lógica:** clave única `(bloque, sub_proyecto, variety_name, season)`. Una lista de estos representa toda la grilla editable.
   ```python
@@ -424,7 +424,7 @@
 - **Tests:** instanciar las 5 celdas no-cero de UI.png.
 - **AC:** todas se construyen.
 
-#### [ ] A1.2.5 — `ScenarioState`
+#### [X] A1.2.5 — `ScenarioState`
 
 - **Lógica:**
   ```python
@@ -442,28 +442,28 @@
 
 ---
 
-### [ ] T1.3 — Modelos derivados
+### [X] T1.3 — Modelos derivados
 
 - **Objetivo:** estructura de salida del motor de cálculo.
 - **AC:** `DerivedState` se serializa a JSON y se reconstruye sin pérdida.
 
-#### [ ] A1.3.1 — `CalculosVariedadCell` (resultado §3.4)
+#### [X] A1.3.1 — `CalculosVariedadCell` (resultado §3.4)
 
 - **Lógica:** una celda por `(variety, productor, plant_year)` con las columnas relevantes para cada productor (algunas vacías según productor). Considerar un modelo polimórfico simple con campos opcionales o tres modelos distintos discriminados por `productor`.
 - **Tests:** construir HFI año 1 V1: `productividad_kg_ha=13_000, ganancia_fob_ha=52_000`.
 - **AC:** roundtrip JSON.
 
-#### [ ] A1.3.2 — `MatrizSubyacente`
+#### [X] A1.3.2 — `MatrizSubyacente`
 
 - **Lógica:** llaves `(plant_year, season)` → float. Atributo `kind ∈ {'produccion','ganancia','plantines'}`. Atributo `bloque, sub_proyecto, variety_name`.
 - **AC:** representar imagen 7 completa como `MatrizSubyacente`.
 
-#### [ ] A1.3.3 — `Subtotales` y `Totales`
+#### [X] A1.3.3 — `Subtotales` y `Totales`
 
 - **Lógica:** sub-totales por temporada para cada bloque/variedad; totales agregados Hortifrut + Terceros.
 - **AC:** representar la sección 4 + 5 de UI.png como objetos válidos.
 
-#### [ ] A1.3.4 — `DerivedState` contenedor
+#### [X] A1.3.4 — `DerivedState` contenedor
 
 - **Lógica:** agrupa los tres anteriores. Implementa `__eq__` natural por Pydantic.
 - **Tests:** dos `DerivedState` calculados del mismo `ScenarioState` son iguales (idempotencia, F2).
@@ -471,24 +471,24 @@
 
 ---
 
-### [ ] T1.4 — Validaciones cross-field
+### [X] T1.4 — Validaciones cross-field
 
 - **Objetivo:** detectar inputs inválidos antes de llegar al motor.
 - **AC:** cada error tiene su test negativo.
 
-#### [ ] A1.4.1 — Validador: variedades referenciadas existen
+#### [X] A1.4.1 — Validador: variedades referenciadas existen
 
 - **Lógica:** `@model_validator(mode='after')` en `ScenarioState` que verifica `{cell.variety_name} ⊆ {variety.name}`.
 - **Tests:** crear escenario con celda apuntando a variedad inexistente → `ValidationError`.
 - **AC:** error message claro: `Variedad 'X' no existe en el escenario`.
 
-#### [ ] A1.4.2 — Validador: temporadas dentro del rango
+#### [X] A1.4.2 — Validador: temporadas dentro del rango
 
 - **Lógica:** verificar que todas las `SeasonCode` usadas pertenezcan al rango `[start_season, end_season]` (por defecto T2627..T3132).
 - **Tests:** celda en T2526 → error.
 - **AC:** test pasa.
 
-#### [ ] A1.4.3 — Validador: sub-proyectos por bloque
+#### [X] A1.4.3 — Validador: sub-proyectos por bloque
 
 - **Lógica:** B1/B2 admiten `{CHAO, OLMOS, ...}`; B3 admite `{Talsa, Diamond Bridge, ...}`. **Extensible:** se permite cualquier string no vacío para no romper escenarios futuros, pero se warn-loggea si no es uno de los conocidos.
 - **Tests:** valor desconocido en B3 → registro en log, no error.
