@@ -1205,16 +1205,16 @@
 
 ---
 
-## [ ] Fase 8 — Tests E2E
+## [X] Fase 8 — Tests E2E
 
 - **Objetivo:** simular el flujo real del usuario contra el sistema integrado.
 - **AC global:** test del flujo completo de UI.png pasa headless.
 
 ---
 
-### [ ] T8.1 — Setup Playwright
+### [X] T8.1 — Setup Playwright
 
-#### [ ] A8.1.1 — `tests/e2e/conftest.py`
+#### [X] A8.1.1 — `tests/e2e/conftest.py`
 
 - **Lógica:** fixture `page` que abre `localhost:8000/` con browser efímero.
 - **Proceso:** `uv run playwright install chromium`.
@@ -1222,9 +1222,9 @@
 
 ---
 
-### [ ] T8.2 — Flujo completo UI.png
+### [X] T8.2 — Flujo completo UI.png
 
-#### [ ] A8.2.1 — `test_playwright_flow.py`
+#### [X] A8.2.1 — `test_playwright_flow.py`
 
 - **Proceso:**
   1. Crear escenario.
@@ -1239,9 +1239,9 @@
 
 ---
 
-### [ ] T8.3 — Recarga y persistencia
+### [X] T8.3 — Recarga y persistencia
 
-#### [ ] A8.3.1 — Test de reload
+#### [X] A8.3.1 — Test de reload
 
 - **Proceso:** tras paso 6, `page.reload()`; verificar que los valores siguen ahí; verificar que NO hay error 404 (patrón SPA, ver `plan_replication.md` §3).
 - **AC:** ok.
