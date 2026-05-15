@@ -1,0 +1,76 @@
+"""Post-procesador para ShinyApps.io.
+
+Inyecta los scripts /_astro/*.js inline en index.html y convierte rutas de
+favicon absolutas a relativas, para que el build funcione bajo cualquier
+subpath dinámico asignado por el worker de ShinyApps.io.
+"""
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+DIST = Path("frontend/dist")
+HTML_FILE = DIST / "index.html"
+
+
+def inline_scripts(html: str) -> str:
+    """Reemplaza <script src="/_astro/..."> por su contenido inline."""
+
+    def _replace(m: re.Match) -> str:  # type: ignore[type-arg]
+        src = m.group(1)
+        # Convertir ruta URL a path de archivo
+        rel = src.lstrip("/")
+        js_path = DIST / rel
+        if js_path.exists():
+            content = js_path.read_text(encoding="utf-8")
+            return f"<script type=\"module\">{content}</script>"
+        print(f"  [WARN] JS no encontrado: {js_path}", file=sys.stderr)
+        return m.group(0)
+
+    pattern = r'<script\s[^>]*type=["\']module["\'][^>]*src=["\'](\/_astro\/[^"\']+)["\'][^>]*>\s*</script>'
+    return re.sub(pattern, _replace, html)
+
+
+def fix_favicon_paths(html: str) -> str:
+    """Convierte rutas absolutas /favicon.* a relativas ./favicon.*"""
+    # <link href="/favicon.xxx"> y <link href="/favicon.xxx">
+    html = re.sub(r'href="\/favicon\.', 'href="./favicon.', html)
+    html = re.sub(r"href='\/favicon\.", "href='./favicon.", html)
+    return html
+
+
+def fix_absolute_asset_refs(html: str) -> str:
+    """Convierte cualquier referencia restante a /_astro/ a relativa."""
+    html = html.replace('href="/_astro/', 'href="./_astro/')
+    html = html.replace("href='/_astro/", "href='./_astro/")
+    html = html.replace('src="/_astro/', 'src="./_astro/')
+    html = html.replace("src='/_astro/", "src='./_astro/")
+    return html
+
+
+def main() -> None:
+    if not HTML_FILE.exists():
+        print(f"[ERROR] No se encontró {HTML_FILE}. Ejecuta 'pnpm run build' primero.")
+        sys.exit(1)
+
+    html = HTML_FILE.read_text(encoding="utf-8")
+    original_len = len(html)
+
+    html = inline_scripts(html)
+    html = fix_favicon_paths(html)
+    html = fix_absolute_asset_refs(html)
+
+    HTML_FILE.write_text(html, encoding="utf-8")
+
+    # Verificar que no queden referencias a /_astro/
+    remaining = re.findall(r'["\']/_astro/', html)
+    if remaining:
+        print(f"[WARN] Aún quedan {len(remaining)} referencias a /_astro/ sin convertir.")
+    else:
+        print(f"[OK] inline_js.py completado ({original_len} -> {len(html)} bytes).")
+        print("     No quedan referencias a /_astro/ en index.html.")
+
+
+if __name__ == "__main__":
+    main()
