@@ -1,6 +1,24 @@
-"""Golden test — imagen8.csv vs compute_recambio (T2.5).
+"""
+Archivo: test_golden_imagen8_recambio.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
 
-Nota: imagen8 OLMOS está en T2627=50 (fuente CSV, no T2728 del plan_maestro tabla).
+Descripción:
+Prueba de "Golden Master" para la lógica de Recambio Varietal (Sección 4.2). 
+Valida la consistencia de los cálculos frente a los datos de referencia en 
+`imagen8.csv`, manejando excepciones específicas de la temporada T26/27.
+
+Acciones Principales:
+    - Validación de agregados de producción para el bloque de recambio.
+    - Validación de agregados de ganancia para el bloque de recambio.
+    - Aseguramiento de la integridad de los datos frente a fuentes externas.
+
+Estructura Interna:
+    - `test_subtotal_produccion`: Verifica toneladas agregadas.
+    - `test_subtotal_ganancia`: Verifica margen de ganancia agregado.
+
+Ejecución:
+    pytest tests/golden/test_golden_imagen8_recambio.py
 """
 
 import pytest

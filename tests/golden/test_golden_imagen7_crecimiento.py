@@ -1,4 +1,25 @@
-"""Golden test — imagen7.csv vs compute_crecimiento_hf (T2.4 A2.4.2)."""
+"""
+Archivo: test_golden_imagen7_crecimiento.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Prueba de "Golden Master" para la lógica de Crecimiento HF (Sección 4.1). 
+Valida que los cálculos de producción y ganancia coincidan con los valores 
+de referencia definidos en `imagen7.csv`.
+
+Acciones Principales:
+    - Validación del subtotal de producción (toneladas) por temporada.
+    - Validación del subtotal de ganancia (miles de USD) por temporada.
+    - Uso de tolerancias para comparaciones de punto flotante.
+
+Estructura Interna:
+    - `test_subtotal_produccion`: Compara producción agregada contra golden.
+    - `test_subtotal_ganancia`: Compara ganancia agregada contra golden.
+
+Ejecución:
+    pytest tests/golden/test_golden_imagen7_crecimiento.py
+"""
 
 import pytest
 

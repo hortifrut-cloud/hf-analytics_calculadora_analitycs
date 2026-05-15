@@ -1,4 +1,26 @@
-"""Golden test — imagen9.csv vs compute_nuevos_terceros + compute_plantines (T2.6, T2.7)."""
+"""
+Archivo: test_golden_imagen9_nuevos_terceros.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Prueba de "Golden Master" para la lógica de Nuevos Terceros y Plantines 
+(Secciones 4.3 y 4.4). Valida los cálculos de producción, ganancia de fruta 
+y ganancia por venta de plantines contra la referencia `imagen9.csv`.
+
+Acciones Principales:
+    - Validación de subtotal de producción para el bloque de terceros.
+    - Validación de subtotal de ganancia para el bloque de terceros.
+    - Validación de ingresos por venta de plantines (regalías y margen).
+
+Estructura Interna:
+    - `test_subtotal_produccion`: Compara producción de terceros.
+    - `test_subtotal_ganancia`: Compara margen de ganancia de terceros.
+    - `test_subtotal_ganancia_plantines`: Compara ingresos por plantines.
+
+Ejecución:
+    pytest tests/golden/test_golden_imagen9_nuevos_terceros.py
+"""
 
 import pytest
 

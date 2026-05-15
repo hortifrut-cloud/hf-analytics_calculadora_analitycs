@@ -1,4 +1,27 @@
-"""Golden test — imagen10.csv vs compute_terceros_totales (T2.8)."""
+"""
+Archivo: test_golden_imagen10_terceros_totales.py
+Fecha de modificación: 14/05/2026
+Autor: Alex Prieto
+
+Descripción:
+Prueba de "Golden Master" para la lógica consolidada de Terceros (Sección 4.5). 
+Valida los resultados finales de producción y ganancia para el bloque de 
+terceros contra la referencia `imagen10.csv`. Incluye validaciones de 
+independencia entre bloques (bloque 3 no afectado por bloques 1 y 2).
+
+Acciones Principales:
+    - Validación de agregados finales de producción para terceros.
+    - Validación de agregados finales de ganancia para terceros.
+    - Test de aislamiento: asegura que cambios en B1/B2 no alteran los totales de B3.
+
+Estructura Interna:
+    - `test_subtotal_produccion`: Verifica toneladas totales de terceros.
+    - `test_subtotal_ganancia`: Verifica margen de ganancia total de terceros.
+    - `test_b1_b2_not_included`: Valida la lógica de filtrado por bloque.
+
+Ejecución:
+    pytest tests/golden/test_golden_imagen10_terceros_totales.py
+"""
 
 import pytest
 
