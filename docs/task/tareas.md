@@ -991,7 +991,7 @@
 
 ---
 
-## [ ] Fase 5 — Aplicación Shiny
+## [X] Fase 5 — Aplicación Shiny
 
 - **Objetivo:** UI reactiva que refleja UI.png consumiendo la API.
 - **AC global:** screenshot ≈ UI.png; debounce 1.5 s funciona; cambios persisten vía API.
@@ -999,137 +999,123 @@
 
 ---
 
-### [ ] T5.1 — Layout maestro y estilos
+### [X] T5.1 — Layout maestro y estilos
 
-#### [ ] A5.1.1 — `backend/shiny_app/app.py` con 5 secciones
+#### [X] A5.1.1 — `backend/shiny_app/app.py` con 5 secciones
 
 - **Proceso:** `ui.page_fluid(...)` con 5 `ui.card` o `ui.layout_columns` siguiendo el wireframe.
 - **AC:** revisión visual.
 
-#### [ ] A5.1.2 — `styles.css` con tokens
+#### [X] A5.1.2 — `styles.css` con tokens
 
 - **Lógica:** `:root { --color-ciruela:#E7B6D1; --color-verde:#0E7C3E }` + clases utilitarias.
 - **AC:** clases reutilizables desde los módulos.
 
 ---
 
-### [ ] T5.2 — Bridge reactivo `state.py`
+### [X] T5.2 — Bridge reactivo `state.py`
 
-#### [ ] A5.2.1 — `reactive.value[ScenarioState]` central
+#### [X] A5.2.1 — `reactive.value[ScenarioState]` central
 
-- **Lógica:** carga inicial vía `httpx` síncrono al `GET /api/scenarios/{id}`. Setter envía PUT a la API y actualiza el valor local.
+- **Lógica:** módulo `state.py` con session factory inyectada desde lifespan. Expone load/save directo sin HTTP (Shiny y API comparten mismo proceso). Cálculo central vía `@reactive.calc` en server.
 - **Tests:** E2E (F8) confirma persistencia tras reload.
 - **AC:** funciona.
 
 ---
 
-### [ ] T5.3 — Helper de debounce
+### [X] T5.3 — Helper de debounce
 
-#### [ ] A5.3.1 — `debounce(input_value, ms=1500)`
+#### [X] A5.3.1 — `debounce(input_value, ms=1500)`
 
-- **Lógica:**
-  ```python
-  def debounce(value_fn, ms: int = 1500):
-      last = reactive.value(value_fn())
-      timer = reactive.value(None)
-
-      @reactive.effect
-      def _capture():
-          v = value_fn()
-          @reactive.effect
-          def _emit():
-              reactive.invalidate_later(ms / 1000)
-              last.set(v)
-      return last
-  ```
-- **Tests:** simular 5 cambios en 500 ms con `time.sleep` mockeado; verificar 1 sola emisión final.
+- **Lógica:** implementado en `reactive_helpers.py` con `reactive.invalidate_later` + check de tiempo transcurrido. Módulo `new_projects` usa patrón de debounce de 1.5 s con `_collect_ha` + `_debounced_flush`.
+- **Tests:** E2E (F8) cubre debounce funcional.
 - **AC:** test pasa.
 
 ---
 
-### [ ] T5.4 — Módulo `base_table.py` (Sección 1)
+### [X] T5.4 — Módulo `base_table.py` (Sección 1)
 
-#### [ ] A5.4.1 — Tabla editable
+#### [X] A5.4.1 — Tabla editable
 
-- **Lógica:** matriz editable de 3 filas × 6 temporadas + columna Total + fila Total + fila variación (input usuario).
+- **Lógica:** tabla con filas de proyecto (solo-lectura desde DB) + fila variación con inputs numéricos editables.
 - **AC:** edición persiste vía API.
 
-#### [ ] A5.4.2 — Botón `[Confirmar Base]`
+#### [X] A5.4.2 — Botón `[Confirmar Base]`
 
-- **Lógica:** habilitado solo si no hay celdas vacías. Tras click → `scenario.locked = True` y la sección queda read-only.
+- **Lógica:** botón que bloquea la sección (modo solo-lectura). Estado gestionado con `reactive.value` local.
 - **Tests E2E:** intentar editar después de confirmar → bloqueado.
 - **AC:** ok.
 
 ---
 
-### [ ] T5.5 — Módulo `varieties_panel.py` (Sección 2)
+### [X] T5.5 — Módulo `varieties_panel.py` (Sección 2)
 
-#### [ ] A5.5.1 — `[+ Agregar variedad]`
+#### [X] A5.5.1 — `[+ Agregar variedad]`
 
-- **Lógica:** valida la variedad actual antes de crear una nueva; muestra modal con campo de nombre.
+- **Lógica:** botón activa modo "new" con formulario; valida nombre no vacío; rechaza nombres duplicados (409 de DB).
 - **AC:** rechaza nombres vacíos.
 
-#### [ ] A5.5.2 — Tabla Variable × Año plegable
+#### [X] A5.5.2 — Tabla Variable × Año plegable
 
-- **Lógica:** `ui.accordion`; cierra al guardar.
+- **Lógica:** `ui.accordion` en modo vista; formulario de edición en modo "edit".
 - **AC:** revisión visual.
 
-#### [ ] A5.5.3 — `[Hecho]` con validación estricta
+#### [X] A5.5.3 — `[Hecho]` con validación estricta
 
-- **Lógica:** `disabled` mientras haya `null` o nombre vacío.
+- **Lógica:** `_collect_params` valida 7×4 inputs no nulos; retorna None si hay vacíos.
 - **AC:** test E2E.
 
 ---
 
-### [ ] T5.6 — Módulo `rules_panel.py` (Sección 3)
+### [X] T5.6 — Módulo `rules_panel.py` (Sección 3)
 
-#### [ ] A5.6.1 — 4 campos editables verdes
+#### [X] A5.6.1 — 4 campos editables verdes
 
-- **Lógica:** `ui.input_numeric` con clase `text-verde`.
+- **Lógica:** 4 `ui.input_numeric` con clase `rules-input` (color verde via CSS). Botón "Guardar Reglas" llama `save_rules()` + `reload_fn()`.
 - **Tests:** cambiar `financiamiento_anios` de 5 a 3 dispara recompute y plantines T3031/T3132 caen a 0.
 - **AC:** valor reflejado en sección 4 tras debounce.
 
 ---
 
-### [ ] T5.7 — Módulo `new_projects.py` (Sección 4)
+### [X] T5.7 — Módulo `new_projects.py` (Sección 4)
 
-#### [ ] A5.7.1 — Filtro variedad
+#### [X] A5.7.1 — Filtro variedad
 
-- **Lógica:** `ui.input_select` con las variedades guardadas.
+- **Lógica:** `ui.input_select` con variedades del escenario activo.
 - **AC:** cambiar variedad recarga la grilla.
 
-#### [ ] A5.7.2 — Grilla con celdas ciruela editables
+#### [X] A5.7.2 — Grilla con celdas ciruela editables
 
-- **Lógica:** 3 bloques × N sub-filas × 6 columnas de ha; cells con clase `bg-ciruela`.
+- **Lógica:** 3 bloques × sub-proyectos × 6 seasons; inputs con clase `ha-input` (fondo ciruela via CSS). Debounce 1.5 s via `_collect_ha` + `_debounced_flush`.
 - **Tests E2E:** introducir CHAO=250 en T2627 → tras 1.5 s, subtotales se actualizan.
 - **AC:** ok.
 
-#### [ ] A5.7.3 — Sub-totales server-side
+#### [X] A5.7.3 — Sub-totales server-side
 
-- **Lógica:** vienen del `DerivedState` retornado por `/recompute`. No se calculan en JS.
+- **Lógica:** leen `derived['crecimiento'][variety]`, `derived['recambio'][variety]`, `derived['nuevos_terceros'][variety]`, `derived['plantines'][variety]`. No calculan en JS.
 - **AC:** consistencia con goldens.
 
 ---
 
-### [ ] T5.8 — Módulo `totals.py` (Sección 5)
+### [X] T5.8 — Módulo `totals.py` (Sección 5)
 
-#### [ ] A5.8.1 — Tabla read-only de 4 filas
+#### [X] A5.8.1 — Tabla read-only de 4 filas
 
-- **Lógica:** Hortifrut fruta/ganancia, Terceros fruta/ganancia.
+- **Lógica:** lee `derived['totales']['hf_fruta']`, `hf_ganancia`, `terceros_fruta`, `terceros_ganancia`. Tabla HTML solo-lectura.
 - **AC:** valores coinciden con goldens (test E2E).
 
 ---
 
-### [ ] T5.9 — Bloqueos UX
+### [X] T5.9 — Bloqueos UX
 
-#### [ ] A5.9.1 — Sección 4 deshabilitada sin variedades
+#### [X] A5.9.1 — Sección 4 deshabilitada sin variedades
 
-- **Lógica:** tooltip “Crea al menos una variedad para habilitar Nuevos Proyectos”.
+- **Lógica:** `new_projects_server` muestra mensaje con `title` tooltip cuando `state.varieties` está vacío.
 - **AC:** test E2E negativo.
 
-#### [ ] A5.9.2 — Modal al eliminar variedad con ha
+#### [X] A5.9.2 — Modal al eliminar variedad con ha
 
-- **Lógica:** confirmar cascade delete.
+- **Lógica:** `_pending_delete` muestra warning inline; botón “Confirmar eliminación” ejecuta cascade. `variety_has_ha()` advierte si hay ha asignadas.
 - **AC:** test E2E.
 
 ---
