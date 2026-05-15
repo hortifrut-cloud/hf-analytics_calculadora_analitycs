@@ -1,0 +1,80 @@
+---
+import ScenarioSwitcher from './ScenarioSwitcher.astro';
+---
+
+<header
+  class="bg-verde"
+  style="
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  "
+>
+  <!-- Logo + Título -->
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div
+      style="
+        width: 36px;
+        height: 36px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: white;
+        letter-spacing: -0.5px;
+        flex-shrink: 0;
+      "
+      aria-hidden="true"
+    >HF</div>
+    <div>
+      <div style="color:white; font-weight:700; font-size:1rem; line-height:1.2;">
+        Business Planning 2026 &mdash; Per&uacute;
+      </div>
+      <div style="color:rgba(255,255,255,0.7); font-size:0.72rem; line-height:1.2;">
+        Plan Breeding Ar&aacute;ndanos
+      </div>
+    </div>
+  </div>
+
+  <!-- Centro: selector de escenario -->
+  <div style="display:flex; align-items:center;">
+    <ScenarioSwitcher />
+  </div>
+
+  <!-- Derecha: placeholder usuario -->
+  <div
+    style="
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.85);
+      font-size: 0.85rem;
+    "
+  >
+    <div
+      style="
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+      "
+      aria-label="Usuario"
+    >
+      U
+    </div>
+    <span>Usuario</span>
+  </div>
+</header>
