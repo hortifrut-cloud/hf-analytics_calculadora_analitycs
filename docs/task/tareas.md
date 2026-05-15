@@ -1310,31 +1310,31 @@
 
 ---
 
-### [/] T10.1 — Provisión Supabase
+### [X] T10.1 — Provisión Supabase
 
-#### [/] A10.1.1 — Crear proyecto Supabase free tier
+#### [X] A10.1.1 — Crear proyecto Supabase free tier
 
 - **Proceso:** UI Supabase → New project → región más cercana.
 - **AC:** dashboard accesible.
 
-#### [/] A10.1.2 — Copiar transaction pooler URL (port 6543)
+#### [X] A10.1.2 — Copiar transaction pooler URL (port 6543)
 
 - **Lógica:** Settings → Database → Connection pooling → Transaction mode.
 - **Formato esperado:** `postgresql+psycopg://postgres.<ref>:<pwd>@aws-0-<region>.pooler.supabase.com:6543/postgres`.
 - **AC:** URL guardada en password manager.
 
-#### [/] A10.1.3 — `alembic upgrade head` contra Supabase
+#### [X] A10.1.3 — `alembic upgrade head` contra Supabase
 
 - **Proceso:** setear `DATABASE_URL` en `.env`, `uv run alembic upgrade head`.
 - **AC:** tablas creadas; verificar en Table Editor de Supabase.
 
 ---
 
-### [/] T10.2 — Adaptar `session.py` para Supabase
+### [X] T10.2 — Adaptar `session.py` para Supabase
 
 - **Cubierto:** A3.1.2 ya tiene la detección. Verificar funciona con la URL real.
 
-#### [/] A10.2.1 — Smoke test contra Supabase
+#### [X] A10.2.1 — Smoke test contra Supabase
 
 - **Tests:** `uv run pytest tests/integration -k supabase --use-supabase` (flag personalizado).
 - **AC:** repos funcionan contra Postgres real.
