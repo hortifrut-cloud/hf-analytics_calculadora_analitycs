@@ -1,0 +1,18 @@
+# Nota: repos remotos de pre-commit están bloqueados por AppLocker corporativo.
+# Se usan solo hooks locales que invocan herramientas via uv run python -m.
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        name: black (format)
+        language: system
+        entry: uv run python -m black
+        types: [python]
+
+      - id: mypy
+        name: mypy (typecheck backend)
+        language: system
+        entry: uv run python -m mypy --ignore-missing-imports backend/
+        pass_filenames: false
+        types: [python]
+        files: ^backend/

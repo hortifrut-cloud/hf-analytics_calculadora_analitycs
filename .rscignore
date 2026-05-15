@@ -1,0 +1,16 @@
+frontend/
+frontend/node_modules/
+frontend/dist/
+notebooks/
+docs/
+tests/
+scripts/
+.venv/
+.git/
+.claude/
+.agents/
+__pycache__/
+*.pyc
+*.pyo
+data/
+var/

@@ -1,0 +1,65 @@
+[project]
+name = "hf-breeding-planner"
+version = "0.1.0"
+description = "Business planning platform for blueberry breeding — Hortifrut Perú"
+readme = "README.md"
+authors = [
+    { name = "Alex Prieto", email = "aprieto@hortifrut.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.18.4",
+    "numpy>=2.1",
+    "pandas>=2.2",
+    "psycopg[binary]>=3.2",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.14.1",
+    "python-dotenv>=1.2.2",
+    "shiny>=1.2",
+    "sqlalchemy>=2.0.36",
+    "starlette>=1.0.0",
+    "uvicorn[standard]>=0.47.0",
+    "xlsxwriter>=3.2.9",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "ANN"]
+ignore = ["ANN101", "ANN102"]
+
+[tool.black]
+line-length = 100
+
+[tool.mypy]
+strict = true
+python_version = "3.13"
+plugins = ["pydantic.mypy"]
+exclude = ["frontend/", "alembic/versions/"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["backend"]
+omit = ["*/tests/*", "alembic/*"]
+
+[dependency-groups]
+dev = [
+    "black>=26.3.1",
+    "hypothesis>=6.152.7",
+    "mypy>=2.1.0",
+    "playwright>=1.59.0",
+    "pre-commit>=4.6.0",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+    "pytest-cov>=7.1.0",
+    "rsconnect-python>=1.29.0",
+    "ruff>=0.15.13",
+]

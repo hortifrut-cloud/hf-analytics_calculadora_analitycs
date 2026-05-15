@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ciruela: #E7B6D1;
+  --color-verde: #0E7C3E;
+}

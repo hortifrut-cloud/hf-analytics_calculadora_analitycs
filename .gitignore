@@ -60,6 +60,15 @@ Desktop.ini
 *.webp
 *.gif
 
+# Build artifacts
+backend/static/
+frontend/dist/
+frontend/node_modules/
+var/*.db
+
+# Python venv
+.venv/
+
 # Excepciones: docs/image
 !/docs/image/
 !/docs/image/*.png
