@@ -1499,3 +1499,46 @@
 - **Proceso:** Añadido event listener `connect` que: (1) setea `dbapi_conn.prepare_threshold = 0` para deshabilitar caché de prepared statements en psycopg3; (2) ejecuta `DEALLOCATE ALL` con `prepare=False` para limpiar statements residuales del pooler.
 - **AC:** Seed y ScenarioRepo.get() con `selectinload` funcionan sin `DuplicatePreparedStatement`. **COMPLETADO 15/05/2026.**
 
+---
+
+### [X] T11.7 — Caché en memoria de `ScenarioState` para eliminar re-lecturas de DB
+
+**Objetivo:** Eliminar el round-trip completo a Supabase que ocurre en cada `trigger_reload()`. Tras cualquier escritura (reglas, ha, variedades), la UI se congela ~700ms esperando 6-10 queries a Supabase. Con caché en memoria, `load_scenario()` retorna instantáneo después de la escritura.
+
+#### [X] A11.7.1 — Agregar `_state_cache` a `state.py` y actualizar operaciones de escritura
+
+- **Objetivo:** `load_scenario()` devuelve desde caché en memoria; `save_rules()` y `upsert_ha_cell()` actualizan la caché in-place; variety ops invalidan la caché.
+- **Input:** `backend/shiny_app/state.py` actual.
+- **Output:** `state.py` con `_state_cache: dict[int, ScenarioState]`, `_cache_get`, `_cache_set`, `_cache_invalidate`; `load_scenario()` con cache-first; `save_rules()` que actualiza reglas en caché sin re-leer DB; `upsert_ha_cell()` que actualiza celdas en caché; `create_variety/update_variety_params/delete_variety` que invalidan caché.
+- **Lógica:** Caché indexada por `scenario_id`. `ScenarioState` es inmutable (frozen Pydantic), se usa `model_copy(update={...})` para crear versión actualizada. Thread-safe via GIL para operaciones simples de dict.
+- **AC:** Tras "Guardar Reglas", el spinner desaparece en < 300ms (solo la escritura a DB, sin re-lectura).
+
+---
+
+### [X] T11.8 — Batch upsert de ha-cells para eliminar N×8 queries en sección 4
+
+**Objetivo:** `_debounced_flush` actualmente llama `upsert_ha_cell` 36 veces (3 bloques × 2 sub × 6 temporadas) con 8-10 queries cada una = hasta 288 queries a Supabase. Consolidar en una sola sesión con batch queries.
+
+#### [X] A11.8.1 — Agregar `batch_upsert_ha_cells` a `state.py`
+
+- **Objetivo:** Una sola sesión de DB que carga mapas de referencia en batch y hace todos los upserts.
+- **Input:** `state.py` con caché de T11.7.
+- **Output:** Función `batch_upsert_ha_cells(scenario_id, cells)` que abre 1 sesión, carga `season_map`/`variety_map`/`group_map`/`subrow_map`/`ha_map` en 5 queries, crea grupos y subrows faltantes, y hace upsert de todas las celdas en batch; actualiza caché en memoria al final.
+- **AC:** 36 celdas se persisten en ~5-8 queries totales (vs 288 antes).
+
+#### [X] A11.8.2 — Actualizar `_debounced_flush` en `new_projects.py` para usar diff + batch
+
+- **Objetivo:** Solo procesar celdas que realmente cambiaron; usar `batch_upsert_ha_cells`.
+- **Lógica:** Comparar cada celda contra `_last_saved["vals"]`; solo incluir en `changed_cells` las que difieren. Llamar `batch_upsert_ha_cells(sid, changed_cells)` una sola vez.
+- **AC:** Si el usuario edita 1 celda, solo 1 celda se persiste. Si edita 5, 5. La sección 4 responde en < 500ms tras el debounce de 1.5s.
+
+---
+
+### [X] T11.9 — Excluir `scratch/` del watcher de uvicorn
+
+**Objetivo:** Los archivos en `scratch/` (p.ej. `seed_db.py`) desencadenan reloads del servidor que interrumpen el desarrollo. No hay código de producción en `scratch/`.
+
+#### [X] A11.9.1 — Agregar `--reload-exclude "scratch"` a los comandos de desarrollo
+
+- **Proceso:** Actualizar `ejecucion.md` §3.2 y `scripts/dev.ps1` con `--reload-exclude ".venv" --reload-exclude "scratch" --reload-exclude "docs" --reload-exclude "tests" --reload-exclude "frontend"`.
+- **AC:** Modificar `scratch/seed_db.py` no provoca restart del servidor.
