@@ -334,3 +334,77 @@ select.form-control:focus {
 
 .delta-up   { color: #16a34a; }
 .delta-down { color: #dc2626; }
+
+/* ─── Sección 4: bloques y gestión de sub-proyectos ──────────────────────── */
+.bloque-card {
+    margin-bottom: 20px;
+    padding: 4px 0;
+}
+
+/* Tabla del bloque con anchos fijos para que las columnas de temporada
+   queden distribuidas uniformemente y los inputs no queden colgando a la
+   izquierda en pantallas anchas. */
+.bloque-card .hf-table {
+    table-layout: fixed;
+}
+.bloque-card .hf-table th:first-child,
+.bloque-card .hf-table td:first-child {
+    width: 180px;
+}
+.bloque-card .hf-table th:nth-child(2),
+.bloque-card .hf-table td:nth-child(2) {
+    width: 90px;
+}
+.bloque-card .hf-table th:last-child,
+.bloque-card .hf-table td.sub-action-cell {
+    width: 56px;
+    text-align: center;
+}
+
+/* Inputs ciruela alineados al centro del td para que no se peguen al borde */
+.bloque-card .ha-input {
+    text-align: center;
+}
+.bloque-card .ha-input .shiny-input-number,
+.bloque-card .ha-input input[type=number] {
+    margin: 0 auto;
+}
+
+/* Botón ✕ para eliminar sub-proyecto */
+.btn-del-sub {
+    padding: 2px 8px !important;
+    font-size: 0.85rem !important;
+    line-height: 1 !important;
+    border-radius: 4px !important;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+}
+.btn-del-sub:hover {
+    opacity: 1;
+}
+
+/* Form inline para agregar nuevo sub-proyecto al pie del bloque */
+.add-sub-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 6px 10px 0 10px;
+}
+.add-sub-form .shiny-input-text,
+.add-sub-form .form-group {
+    margin-bottom: 0;
+}
+.add-sub-form input[type=text] {
+    height: 32px;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+}
+
+/* Limita el ancho útil de la sección 4 en pantallas muy anchas para que
+   no queden los inputs anclados a la izquierda. Aplica también a la 5. */
+.hf-section-wide {
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+}

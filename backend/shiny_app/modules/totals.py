@@ -144,5 +144,6 @@ def totals_server(
                     row("  Ganancia", "miles $", ter_gan, prev_ter_gan),
                 ),
                 class_="hf-table",
-            )
+            ),
+            class_="hf-section-wide",
         )
