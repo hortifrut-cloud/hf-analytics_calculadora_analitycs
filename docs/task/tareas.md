@@ -1166,39 +1166,39 @@
 
 ---
 
-## [ ] Fase 7 — Frontend Astro
+## [X] Fase 7 — Frontend Astro
 
 - **Objetivo:** shell estático con header + iframe Shiny.
 - **AC global:** Lighthouse Performance ≥ 90; revisión visual ok.
 
 ---
 
-### [ ] T7.1 — `index.astro`
+### [X] T7.1 — `index.astro`
 
-#### [ ] A7.1.1 — Layout SPA single-page
+#### [X] A7.1.1 — Layout SPA single-page
 
-- **Lógica:** header arriba; iframe `src="./shiny/"` ocupa el resto del viewport con `height: calc(100vh - 64px)`.
+- **Lógica:** header arriba; iframe `src=”./shiny/”` ocupa el resto del viewport con `height: calc(100vh - 64px)`.
 - **AC:** Lighthouse ≥ 90.
 
 ---
 
-### [ ] T7.2 — Tokens Tailwind
+### [X] T7.2 — Tokens Tailwind
 
-#### [ ] A7.2.1 — `tailwind.config.cjs`
+#### [X] A7.2.1 — `tailwind.config.cjs`
 
 - **Lógica:** colores `ciruela` y `verde` definidos como tokens.
 - **AC:** `bg-ciruela`, `text-verde` funcionan.
 
 ---
 
-### [ ] T7.3 — Componentes mínimos
+### [X] T7.3 — Componentes mínimos
 
-#### [ ] A7.3.1 — `Header.astro`
+#### [X] A7.3.1 — `Header.astro`
 
 - **Contenido:** logo, título (“Business Planning 2026 — Perú”), placeholder de usuario.
 - **AC:** se muestra.
 
-#### [ ] A7.3.2 — `ScenarioSwitcher.astro`
+#### [X] A7.3.2 — `ScenarioSwitcher.astro`
 
 - **Lógica:** dropdown vacío por ahora; conectará a `/api/scenarios` en Fase 10.
 - **AC:** componente importable.
