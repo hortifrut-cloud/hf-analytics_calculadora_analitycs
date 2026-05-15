@@ -36,12 +36,17 @@ _SEASON_LABELS = ["T26/27", "T27/28", "T28/29", "T29/30", "T30/31", "T31/32"]
 
 
 def _fmt(v: object) -> str:
+    """
+    Formatea un valor numérico para celdas de la tabla de totales.
+
+    "—" se reserva para valores no calculables (None); 0.0 se muestra como "0"
+    para evidenciar que el motor de cálculo corrió y dio cero (típicamente
+    porque la variedad activa no tiene hectáreas asignadas).
+    """
     if v is None:
         return "—"
     try:
         f = float(v)  # type: ignore[arg-type]
-        if f == 0:
-            return "—"
         return f"{f:,.0f}"
     except (TypeError, ValueError):
         return "—"

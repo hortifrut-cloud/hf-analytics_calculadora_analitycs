@@ -48,12 +48,18 @@ def _ha_id(bloque: str, sub: str, season: str) -> str:
 
 
 def _fmt(v: object) -> str:
+    """
+    Formatea un valor numérico para mostrar en celdas de subtotales.
+
+    Distingue tres casos:
+        - None / no comparable: "—" (sin dato calculado).
+        - 0.0 exacto: "0" (cálculo corrió y dio cero, ej. sin ha asignadas).
+        - Otros: "{valor:,.0f}".
+    """
     if v is None:
         return "—"
     try:
         f = float(v)  # type: ignore[arg-type]
-        if f == 0:
-            return "—"
         return f"{f:,.0f}"
     except (TypeError, ValueError):
         return "—"
@@ -124,18 +130,8 @@ def new_projects_server(
         derived = derived_fn()
         prev_derived = prev_derived_fn()
 
-        # Selector de variedad
-        selector = ui.layout_columns(
-            ui.input_select(
-                "variety_filter",
-                "Filtro Variedad:",
-                choices={n: n for n in variety_names},
-                selected=variety_names[0],
-            ),
-            col_widths=(4,),
-        )
-
-        # Determinar variedad activa
+        # Determinar variedad activa ANTES de construir el selector para que
+        # selected= preserve la selección actual y no resetee al re-renderizar.
         try:
             sel_variety = input.variety_filter()
         except Exception:
@@ -143,11 +139,34 @@ def new_projects_server(
         if not sel_variety or sel_variety not in variety_names:
             sel_variety = variety_names[0]
 
+        # Selector de variedad
+        selector = ui.layout_columns(
+            ui.input_select(
+                "variety_filter",
+                "Filtro Variedad:",
+                choices={n: n for n in variety_names},
+                selected=sel_variety,
+            ),
+            col_widths=(4,),
+        )
+
         # Construir ha_dict para variedad activa
         ha_dict: dict[tuple[str, str, str], float] = {}
         for cell in state.new_project_cells:
             if cell.variety_name == sel_variety:
                 ha_dict[(cell.bloque.value, cell.sub_proyecto, cell.season)] = cell.hectareas
+
+        # Banner explicativo cuando la variedad seleccionada no tiene ha asignadas
+        # en ningún bloque/temporada — evita confusión con "—" en sub-totales.
+        total_ha_variedad = sum(ha_dict.values())
+        empty_banner: ui.Tag | None = None
+        if total_ha_variedad == 0:
+            empty_banner = ui.tags.p(
+                f"La variedad '{sel_variety}' aún no tiene hectáreas asignadas. "
+                "Ingresa valores en las celdas ciruela para que los subtotales "
+                "y los totales (Sección 5) se calculen.",
+                class_="hf-warning",
+            )
 
         bloque_cards = []
         for bloque_key, (bloque_label, subproyectos) in _BLOQUE_META.items():
@@ -247,7 +266,11 @@ def new_projects_server(
                 )
             )
 
-        return ui.div(selector, *bloque_cards)
+        children: list[ui.Tag] = [selector]
+        if empty_banner is not None:
+            children.append(empty_banner)
+        children.extend(bloque_cards)
+        return ui.div(*children)
 
     # -----------------------------------------------------------------------
     # Debounce: recoger cambios de inputs de ha
