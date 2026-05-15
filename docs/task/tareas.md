@@ -773,7 +773,7 @@
 
 ---
 
-## [ ] Fase 3 — Persistencia: SQLAlchemy + SQLite dev + Supabase
+## [X] Fase 3 — Persistencia: SQLAlchemy + SQLite dev + Supabase
 
 - **Objetivo:** persistir `ScenarioState` sin acoplarse al motor; mismo código corre con SQLite y Postgres.
 - **AC global:** `alembic upgrade head` corre limpio en ambos motores; round-trip `ScenarioState` ok.
@@ -781,18 +781,18 @@
 
 ---
 
-### [ ] T3.1 — Engine factory dual
+### [X] T3.1 — Engine factory dual
 
 - **Objetivo:** elegir pool y dialect según URL.
 - **AC:** detección automática del pooler de Supabase.
 
-#### [ ] A3.1.1 — `backend/settings.py` con `BaseSettings`
+#### [X] A3.1.1 — `backend/settings.py` con `BaseSettings`
 
 - **Lógica:** Pydantic Settings con `DATABASE_URL`, `DEBOUNCE_MS`, etc.
 - **Tests:** importar y leer valores con `.env.example`.
 - **AC:** sin secrets en código.
 
-#### [ ] A3.1.2 — `backend/db/session.py`
+#### [X] A3.1.2 — `backend/db/session.py`
 
 - **Lógica:**
   ```python
@@ -812,43 +812,43 @@
 
 ---
 
-### [ ] T3.2 — Modelos ORM
+### [X] T3.2 — Modelos ORM
 
 - **Objetivo:** mapear el esquema §1.3 a SQLAlchemy 2.x.
 - **AC:** `mypy strict` ok; tablas creadas en SQLite vacío via `Base.metadata.create_all`.
 
-#### [ ] A3.2.1 — Tablas `scenario`, `season`, `base_table_*`
+#### [X] A3.2.1 — Tablas `scenario`, `season`, `base_table_*`
 
 - **Lógica:** seguir literal el esquema. Usar `sqlalchemy.JSON` (NO `JSONB`).
 - **AC:** importable.
 
-#### [ ] A3.2.2 — `variety`, `variety_param`
+#### [X] A3.2.2 — `variety`, `variety_param`
 
 - **Lógica:** `UNIQUE(variety_id, plant_year)`; FK a `scenario`.
 - **AC:** test de integridad: insertar duplicado falla.
 
-#### [ ] A3.2.3 — `rules`, `new_project_group`, `new_project_subrow`, `new_project_ha`
+#### [X] A3.2.3 — `rules`, `new_project_group`, `new_project_subrow`, `new_project_ha`
 
 - **Lógica:** `rules` 1:1 con `scenario`. `new_project_ha` sparse (solo celdas con valor).
 - **AC:** modelo refleja el dominio.
 
-#### [ ] A3.2.4 — `audit_log` con `payload JSON`
+#### [X] A3.2.4 — `audit_log` con `payload JSON`
 
 - **AC:** insertar y leer un dict arbitrario funciona en ambos motores.
 
 ---
 
-### [ ] T3.3 — Alembic init + migración inicial
+### [X] T3.3 — Alembic init + migración inicial
 
 - **Objetivo:** migraciones versionadas.
 - **AC:** `alembic upgrade head` ok en SQLite y Postgres vacíos.
 
-#### [ ] A3.3.1 — `alembic init alembic`
+#### [X] A3.3.1 — `alembic init alembic`
 
 - **Proceso:** después, editar `alembic/env.py` para leer `DATABASE_URL` desde `settings` y usar `Base.metadata`.
 - **AC:** archivo `env.py` no contiene URLs hardcoded.
 
-#### [ ] A3.3.2 — Migración `0001_initial`
+#### [X] A3.3.2 — Migración `0001_initial`
 
 - **Proceso:** `alembic revision --autogenerate -m "initial"`. Revisar diff antes de commitear.
 - **Tests:** levantar SQLite vacío, correr migración, verificar tablas con `inspect(engine).get_table_names()`.
@@ -856,44 +856,44 @@
 
 ---
 
-### [ ] T3.4 — Seeds default
+### [X] T3.4 — Seeds default
 
 - **Objetivo:** datos iniciales para arrancar.
 - **AC:** `python scripts/seed_dev_db.py` deja un escenario canónico cargado.
 
-#### [ ] A3.4.1 — `backend/db/seeds.py`
+#### [X] A3.4.1 — `backend/db/seeds.py`
 
 - **Lógica:** Tabla Base de imagen 1 + Reglas defaults (§3.3).
 - **AC:** función `apply_defaults(session, scenario_id)` insertable.
 
-#### [ ] A3.4.2 — `scripts/seed_dev_db.py`
+#### [X] A3.4.2 — `scripts/seed_dev_db.py`
 
 - **Lógica:** crea escenario `"UI.png demo"` + V1 + las 5 celdas de ha + corre `recompute` y guarda nada (es solo demo).
 - **AC:** tras correr, `sqlite3 var/app.db ".tables"` lista las tablas pobladas.
 
 ---
 
-### [ ] T3.5 — Repositorios
+### [X] T3.5 — Repositorios
 
 - **Objetivo:** abstraer SQL detrás de funciones que aceptan/devuelven Pydantic.
 - **AC:** round-trip `ScenarioState` → DB → `ScenarioState` es bit-a-bit igual.
 
-#### [ ] A3.5.1 — `ScenarioRepo`
+#### [X] A3.5.1 — `ScenarioRepo`
 
 - **Lógica:** `create`, `get_by_id`, `update`, `delete`, `list`. Lee `ScenarioState` desde DB y viceversa.
 - **Tests:** `tests/integration/test_repos.py` con SQLite en memoria.
 - **AC:** ok.
 
-#### [ ] A3.5.2 — `VarietyRepo`, `RulesRepo`, `NewProjectsRepo`
+#### [X] A3.5.2 — `VarietyRepo`, `RulesRepo`, `NewProjectsRepo`
 
 - **Lógica:** análogos.
 - **AC:** tests por repo.
 
 ---
 
-### [ ] T3.6 — Audit log
+### [X] T3.6 — Audit log
 
-#### [ ] A3.6.1 — Decorador `@audited`
+#### [X] A3.6.1 — Decorador `@audited`
 
 - **Lógica:**
   ```python
