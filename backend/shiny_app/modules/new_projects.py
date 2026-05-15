@@ -25,6 +25,7 @@ Integración UI:
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Callable
 
@@ -32,19 +33,55 @@ from shiny import module, reactive, render, ui
 
 from backend.domain.enums import ALL_SEASONS, BloqueKind
 from backend.domain.inputs import NewProjectCell
-from backend.shiny_app.state import batch_upsert_ha_cells
+from backend.shiny_app.state import (
+    add_subproyecto,
+    batch_upsert_ha_cells,
+    remove_subproyecto,
+)
 
 _SEASON_LABELS = ["T26/27", "T27/28", "T28/29", "T29/30", "T30/31", "T31/32"]
 
-_BLOQUE_META: dict[str, tuple[str, list[str]]] = {
-    "crecimiento_hf": ("1. Crecimiento Hortifrut", ["CHAO", "OLMOS"]),
-    "recambio_varietal": ("2. Recambio varietal", ["CHAO", "OLMOS"]),
-    "nuevos_terceros": ("3. Nuevos Prod Terceros", ["Talsa", "Diamond Bridge"]),
+# Etiqueta legible y sub-proyectos por defecto cuando el escenario aún no
+# tiene ninguno persistido en DB.
+_BLOQUE_LABELS: dict[str, str] = {
+    "crecimiento_hf": "1. Crecimiento Hortifrut",
+    "recambio_varietal": "2. Recambio varietal",
+    "nuevos_terceros": "3. Nuevos Prod Terceros",
 }
+_DEFAULT_SUBPROYECTOS: dict[str, list[str]] = {
+    "crecimiento_hf": ["CHAO", "OLMOS"],
+    "recambio_varietal": ["CHAO", "OLMOS"],
+    "nuevos_terceros": ["Talsa", "Diamond Bridge"],
+}
+_BLOQUE_KINDS: list[str] = list(_BLOQUE_LABELS.keys())
+
+
+def _safe_id(text: str) -> str:
+    """Sanitiza un string para usarlo como sufijo de input ID de Shiny."""
+    return re.sub(r"[^a-zA-Z0-9]+", "_", text).strip("_") or "x"
 
 
 def _ha_id(bloque: str, sub: str, season: str) -> str:
-    return f"ha_{bloque}_{sub}_{season}".replace(" ", "_")
+    return f"ha_{bloque}_{_safe_id(sub)}_{season}"
+
+
+def _del_id(bloque: str, sub: str) -> str:
+    return f"btn_del_{bloque}_{_safe_id(sub)}"
+
+
+def _add_btn_id(bloque: str) -> str:
+    return f"btn_add_sub_{bloque}"
+
+
+def _add_txt_id(bloque: str) -> str:
+    return f"txt_add_sub_{bloque}"
+
+
+def _subproyectos_for(state, bloque_key: str) -> list[str]:
+    """Resuelve la lista activa de sub-proyectos para un bloque del escenario."""
+    if state is not None and state.subproyectos.get(bloque_key):
+        return list(state.subproyectos[bloque_key])
+    return list(_DEFAULT_SUBPROYECTOS[bloque_key])
 
 
 def _fmt(v: object) -> str:
@@ -169,19 +206,22 @@ def new_projects_server(
             )
 
         bloque_cards = []
-        for bloque_key, (bloque_label, subproyectos) in _BLOQUE_META.items():
+        for bloque_key in _BLOQUE_KINDS:
+            bloque_label = _BLOQUE_LABELS[bloque_key]
+            subproyectos = _subproyectos_for(state, bloque_key)
             rows: list[ui.Tag] = []
 
-            # Header de temporadas
+            # Header de temporadas + columna para el botón de eliminar
             rows.append(
                 ui.tags.tr(
                     ui.tags.th("Sub-proyecto"),
                     ui.tags.th("Unidad"),
                     *[ui.tags.th(lbl) for lbl in _SEASON_LABELS],
+                    ui.tags.th(""),  # acción
                 )
             )
 
-            # Filas de ha editables
+            # Filas de ha editables (una por sub-proyecto)
             for sub in subproyectos:
                 ha_cells = []
                 for s in ALL_SEASONS:
@@ -200,8 +240,19 @@ def new_projects_server(
                             class_="ha-input",
                         )
                     )
+                del_btn = ui.input_action_button(
+                    _del_id(bloque_key, sub),
+                    "✕",
+                    class_="btn btn-sm btn-outline-danger btn-del-sub",
+                    title=f"Eliminar sub-proyecto '{sub}' (borra sus hectáreas en todas las variedades)",
+                )
                 rows.append(
-                    ui.tags.tr(ui.tags.td(sub), ui.tags.td("ha"), *ha_cells)
+                    ui.tags.tr(
+                        ui.tags.td(sub),
+                        ui.tags.td("ha"),
+                        *ha_cells,
+                        ui.tags.td(del_btn, class_="sub-action-cell"),
+                    )
                 )
 
             # Filas de subtotales (de derived state)
@@ -244,6 +295,7 @@ def new_projects_server(
                 cells: list[ui.Tag] = [ui.tags.td(label), ui.tags.td(unit)]
                 for s in ALL_SEASONS:
                     cells.append(_delta_cell(data.get(s), prev_data.get(s)))
+                cells.append(ui.tags.td(""))  # columna acción vacía
                 return ui.tags.tr(*cells, class_="subtotal-row")
 
             rows.append(subtotal_row("Sub total (producción)", "tn", sub_prod, prev_sub_prod))
@@ -255,6 +307,22 @@ def new_projects_server(
                     )
                 )
 
+            # Pie del bloque: form inline para agregar nuevo sub-proyecto
+            add_form = ui.div(
+                ui.input_text(
+                    _add_txt_id(bloque_key),
+                    "",
+                    placeholder="Nuevo sub-proyecto…",
+                    width="220px",
+                ),
+                ui.input_action_button(
+                    _add_btn_id(bloque_key),
+                    "+ Agregar",
+                    class_="btn btn-sm btn-outline-success",
+                ),
+                class_="add-sub-form",
+            )
+
             bloque_cards.append(
                 ui.div(
                     ui.tags.p(ui.tags.strong(bloque_label)),
@@ -262,7 +330,8 @@ def new_projects_server(
                         ui.tags.tbody(*rows),
                         class_="hf-table",
                     ),
-                    style="margin-bottom:16px;",
+                    add_form,
+                    class_="bloque-card",
                 )
             )
 
@@ -270,7 +339,7 @@ def new_projects_server(
         if empty_banner is not None:
             children.append(empty_banner)
         children.extend(bloque_cards)
-        return ui.div(*children)
+        return ui.div(*children, class_="hf-section-wide")
 
     # -----------------------------------------------------------------------
     # Debounce: recoger cambios de inputs de ha
@@ -294,8 +363,8 @@ def new_projects_server(
             return
 
         vals: dict[tuple[str, str, str], float] = {}
-        for bloque_key, (_, subproyectos) in _BLOQUE_META.items():
-            for sub in subproyectos:
+        for bloque_key in _BLOQUE_KINDS:
+            for sub in _subproyectos_for(state, bloque_key):
                 for s in ALL_SEASONS:
                     iid = _ha_id(bloque_key, sub, s)
                     try:
@@ -359,3 +428,65 @@ def new_projects_server(
                 reload_fn()
             except Exception:
                 pass
+
+    # -----------------------------------------------------------------------
+    # Gestión de sub-proyectos (Agregar / Eliminar)
+    # -----------------------------------------------------------------------
+
+    def _make_add_handler(bloque_key: str) -> Callable:
+        """Crea un effect que reacciona al botón Agregar de un bloque concreto."""
+        btn_id = _add_btn_id(bloque_key)
+        txt_id = _add_txt_id(bloque_key)
+
+        @reactive.effect
+        @reactive.event(getattr(input, btn_id))
+        def _on_add() -> None:
+            sid = scenario_id_rv.get()
+            try:
+                raw = getattr(input, txt_id)()
+            except Exception:
+                return
+            label = (raw or "").strip()
+            if not label:
+                return
+            ok = add_subproyecto(sid, bloque_key, label)
+            if ok:
+                reload_fn()
+
+        return _on_add
+
+    # Registramos un effect por bloque para los botones de agregar
+    for _bk in _BLOQUE_KINDS:
+        _make_add_handler(_bk)
+
+    # Eliminar sub-proyecto: como los IDs son dinámicos (uno por sub-proyecto),
+    # se hace polling de contadores de clicks contra los inputs presentes.
+    _del_clicks: reactive.Value[dict[str, int]] = reactive.value({})
+
+    @reactive.effect
+    def _watch_delete_clicks() -> None:
+        """Detecta clicks en cualquier botón ✕ de eliminación de sub-proyecto."""
+        state = state_fn()
+        if not state:
+            return
+        sid = scenario_id_rv.get()
+        prev = _del_clicks.get()
+        new_counts = dict(prev)
+        triggered: list[tuple[str, str]] = []
+        for bloque_key in _BLOQUE_KINDS:
+            for sub in _subproyectos_for(state, bloque_key):
+                iid = _del_id(bloque_key, sub)
+                try:
+                    n = int(getattr(input, iid)() or 0)
+                except Exception:
+                    continue
+                if n > prev.get(iid, 0):
+                    new_counts[iid] = n
+                    triggered.append((bloque_key, sub))
+        if triggered:
+            # Persistir contadores ANTES de tocar DB para evitar bucles si
+            # el reload re-dispara la effect en cascada.
+            _del_clicks.set(new_counts)
+            for bloque_key, sub in triggered:
+                remove_subproyecto(sid, bloque_key, sub)
+            reload_fn()
