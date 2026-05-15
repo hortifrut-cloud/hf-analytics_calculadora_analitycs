@@ -27,6 +27,15 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool, StaticPool
 
 
+def _normalize_url(url: str) -> str:
+    """Reescribe postgresql:// → postgresql+psycopg:// para forzar el driver psycopg3."""
+    if url.startswith("postgresql://") or url.startswith("postgres://"):
+        return url.replace("postgresql://", "postgresql+psycopg://", 1).replace(
+            "postgres://", "postgresql+psycopg://", 1
+        )
+    return url
+
+
 def make_engine(url: str) -> Engine:
     """
     Crea un motor de SQLAlchemy adaptado al tipo de base de datos y entorno.
@@ -37,6 +46,7 @@ def make_engine(url: str) -> Engine:
     Returns:
         Engine: Instancia del motor configurada.
     """
+    url = _normalize_url(url)
     if "pooler.supabase.com" in url:
         return create_engine(url, poolclass=NullPool, future=True)
     if url.startswith("sqlite"):
