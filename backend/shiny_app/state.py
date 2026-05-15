@@ -1,6 +1,6 @@
 """
 Archivo: state.py
-Fecha de modificación: 14/05/2026
+Fecha de modificación: 15/05/2026
 Autor: Alex Prieto
 
 Descripción:
@@ -29,6 +29,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from sqlalchemy import delete as sql_delete
 from sqlalchemy.orm import sessionmaker
 
 from backend.db.repos import RulesRepo, ScenarioRepo
@@ -182,26 +183,41 @@ def create_variety(
 
 
 def update_variety_params(variety_id: int, params: list[VarietyParamRow]) -> None:
+    """
+    Actualiza los parámetros de una variedad con un bulk delete + bulk insert.
+
+    Reemplaza el loop individual de DELETE por un único DELETE WHERE y usa
+    `bulk_insert_mappings` para insertar los 7 años en una sola operación,
+    reduciendo de ~14 queries a 2 queries en total.
+
+    Args:
+        variety_id (int): ID de la variedad a actualizar.
+        params (list[VarietyParamRow]): Lista de 7 filas de parámetros.
+    """
     from backend.db.models import Variety, VarietyParam
 
     with _session() as s:
         v_orm = s.get(Variety, variety_id)
         if v_orm is None:
             return
-        for p in v_orm.params:
-            s.delete(p)
+        # Un solo DELETE WHERE en vez de N DELETEs individuales por fila
+        s.execute(sql_delete(VarietyParam).where(VarietyParam.variety_id == variety_id))
         s.flush()
-        for p in params:
-            s.add(
-                VarietyParam(
-                    variety_id=variety_id,
-                    plant_year=p.plant_year,
-                    productividad=p.productividad,
-                    densidad=p.densidad,
-                    precio_estimado=p.precio_estimado,
-                    pct_recaudacion=p.pct_recaudacion,
-                )
-            )
+        # Bulk insert: 7 filas en una sola operación
+        s.bulk_insert_mappings(
+            VarietyParam,
+            [
+                {
+                    "variety_id": variety_id,
+                    "plant_year": p.plant_year,
+                    "productividad": p.productividad,
+                    "densidad": p.densidad,
+                    "precio_estimado": p.precio_estimado,
+                    "pct_recaudacion": p.pct_recaudacion,
+                }
+                for p in params
+            ],
+        )
         s.commit()
 
 
