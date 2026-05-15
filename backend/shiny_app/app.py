@@ -4,9 +4,9 @@ Fecha de modificación: 14/05/2026
 Autor: Alex Prieto
 
 Descripción:
-Punto de entrada principal de la aplicación Shiny. Orquesta la interfaz de 
-usuario y la lógica del servidor, integrando los diferentes módulos 
-funcionales (Tabla Base, Variedades, Reglas, Proyectos y Totales) bajo un 
+Punto de entrada principal de la aplicación Shiny. Orquesta la interfaz de
+usuario y la lógica del servidor, integrando los diferentes módulos
+funcionales (Tabla Base, Variedades, Reglas, Proyectos y Totales) bajo un
 estado reactivo unificado.
 
 Acciones Principales:
@@ -85,7 +85,14 @@ app_ui = ui.page_fluid(
 
 def server(input: ui.input, output: ui.output, session: ui.session) -> None:  # noqa: A002
     # --- Estado central ---
-    scenario_id: reactive.Value[int] = reactive.value(1)
+    initial_id = 1
+    scenarios = list_scenarios()
+    if scenarios:
+        # Si el 1 no está en la lista, tomamos el primero disponible
+        if not any(sid == 1 for sid, _ in scenarios):
+            initial_id = scenarios[0][0]
+
+    scenario_id: reactive.Value[int] = reactive.value(initial_id)
     _reload_counter: reactive.Value[int] = reactive.value(0)
 
     def trigger_reload() -> None:

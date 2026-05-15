@@ -1,11 +1,11 @@
 """
 Archivo: varieties_panel.py
-Fecha de modificación: 14/05/2026
+Fecha de modificación: 15/05/2026
 Autor: Alex Prieto
 
 Descripción:
-Módulo Shiny para la Sección 2: Datos Variedades. Implementa un sistema 
-CRUD completo para la gestión de variedades y sus parámetros técnicos 
+Módulo Shiny para la Sección 2: Datos Variedades. Implementa un sistema
+CRUD completo para la gestión de variedades y sus parámetros técnicos
 (productividad, densidad, precio, recaudación) proyectados a 7 años.
 
 Acciones Principales:
@@ -26,6 +26,7 @@ Integración UI:
 
 from __future__ import annotations
 
+import re
 from typing import Callable
 
 from shiny import module, reactive, render, ui
@@ -46,6 +47,40 @@ _PARAM_FIELDS = [
     ("pct_recaudacion", "% Recaud. terceros", "%"),
 ]
 _YEARS = list(range(1, 8))
+
+# Valores default de la Variedad 1 de referencia (docs/image/imagen2.csv)
+# Estos son los valores gold standard del plan de negocio HF Perú
+DEFAULT_VARIETY_PARAMS: dict[str, float] = {
+    "productividad_1": 2,
+    "productividad_2": 3,
+    "productividad_3": 4,
+    "productividad_4": 5,
+    "productividad_5": 5,
+    "productividad_6": 5,
+    "productividad_7": 5,
+    "densidad_1": 6500,
+    "densidad_2": 6500,
+    "densidad_3": 6500,
+    "densidad_4": 6500,
+    "densidad_5": 6500,
+    "densidad_6": 6500,
+    "densidad_7": 6500,
+    "precio_estimado_1": 4,
+    "precio_estimado_2": 4,
+    "precio_estimado_3": 4,
+    "precio_estimado_4": 4,
+    "precio_estimado_5": 4,
+    "precio_estimado_6": 4,
+    "precio_estimado_7": 4,
+    # pct_recaudacion se muestra en % en UI (×100 del valor almacenado en DB)
+    "pct_recaudacion_1": 100,
+    "pct_recaudacion_2": 100,
+    "pct_recaudacion_3": 90,
+    "pct_recaudacion_4": 80,
+    "pct_recaudacion_5": 70,
+    "pct_recaudacion_6": 60,
+    "pct_recaudacion_7": 60,
+}
 
 
 def _param_input_id(year: int, field: str, prefix: str = "") -> str:
@@ -150,14 +185,16 @@ def varieties_panel_server(
                 "+ Agregar variedad",
                 class_="btn btn-sm btn-outline-success",
             ),
-            ui.input_select(
-                "selected_variety",
-                "Variedad:",
-                choices={"": "— seleccionar —", **{n: n for n in variety_names}},
-                selected=variety_names[0] if variety_names else "",
-            )
-            if variety_names
-            else ui.p("Sin variedades aún.", class_="text-muted"),
+            (
+                ui.input_select(
+                    "selected_variety",
+                    "Variedad:",
+                    choices={"": "— seleccionar —", **{n: n for n in variety_names}},
+                    selected=variety_names[0] if variety_names else "",
+                )
+                if variety_names
+                else ui.p("Sin variedades aún.", class_="text-muted")
+            ),
             col_widths=(4, 8),
         )
 
@@ -166,7 +203,8 @@ def varieties_panel_server(
         if mode == "new":
             form = ui.card(
                 ui.card_header("Nueva variedad"),
-                _variety_form("new_"),
+                # Valores pre-poblados con los defaults de imagen2.csv para facilitar la entrada
+                _variety_form("new_", default_vals=DEFAULT_VARIETY_PARAMS),
                 ui.layout_columns(
                     ui.input_action_button(
                         "btn_done_new",
@@ -220,7 +258,10 @@ def varieties_panel_server(
         if not variety_names:
             return ui.div(
                 selector_row,
-                ui.p("No hay variedades. Usa '+ Agregar variedad' para crear una.", class_="hf-warning"),
+                ui.p(
+                    "No hay variedades. Usa '+ Agregar variedad' para crear una.",
+                    class_="hf-warning",
+                ),
                 status,
             )
 
@@ -230,24 +271,30 @@ def varieties_panel_server(
             for p in v.params:
                 for field, _, _ in _PARAM_FIELDS:
                     dv[f"{field}_{p.plant_year}"] = getattr(p, field)
+            # Sanitizar v.name para usarlo como prefijo de IDs HTML (solo letras, numeros, guiones bajos)
+            safe_name = re.sub(r"[^a-zA-Z0-9_]", "_", v.name)
             # Show read-only table inside accordion
             panels.append(
                 ui.accordion_panel(
                     v.name,
-                    _variety_form(f"ro_{v.name}_", default_vals=dv, name_val=v.name, readonly=True),
+                    _variety_form(
+                        f"ro_{safe_name}_", default_vals=dv, name_val=v.name, readonly=True
+                    ),
                 )
             )
 
         return ui.div(
             selector_row,
             ui.accordion(*panels, id="variety_accordion", open=False, multiple=True),
-            ui.input_action_button(
-                "btn_edit_variety",
-                "Editar variedad seleccionada",
-                class_="btn btn-sm btn-outline-primary mt-2",
-            )
-            if variety_names
-            else ui.div(),
+            (
+                ui.input_action_button(
+                    "btn_edit_variety",
+                    "Editar variedad seleccionada",
+                    class_="btn btn-sm btn-outline-primary mt-2",
+                )
+                if variety_names
+                else ui.div()
+            ),
             status,
         )
 
@@ -375,9 +422,7 @@ def varieties_panel_server(
             return
         sid = scenario_id_rv.get()
         if variety_has_ha(sid, sel):
-            _status_msg.set(
-                f"⚠ Eliminando '{sel}' — sus ha asignadas también serán borradas."
-            )
+            _status_msg.set(f"⚠ Eliminando '{sel}' — sus ha asignadas también serán borradas.")
         vid = get_variety_id(sid, sel)
         if vid is not None:
             delete_variety(vid)

@@ -54,7 +54,10 @@ def _supabase_connect_args(url: str) -> dict:
         hostaddr = infos[0][4][0]
     except OSError:
         hostaddr = host
-    return {"hostaddr": hostaddr, "sslmode": "require"}
+    return {
+        "hostaddr": hostaddr,
+        "sslmode": "require",
+    }
 
 
 def make_engine(url: str) -> Engine:
@@ -67,14 +70,42 @@ def make_engine(url: str) -> Engine:
     Returns:
         Engine: Instancia del motor configurada.
     """
+    from sqlalchemy import event
+
     url = _normalize_url(url)
     if "pooler.supabase.com" in url:
-        return create_engine(
+        engine = create_engine(
             url,
             poolclass=NullPool,
             future=True,
             connect_args=_supabase_connect_args(url),
         )
+
+        @event.listens_for(engine, "connect")
+        def _disable_prepared_statements(dbapi_conn: object, _connection_record: object) -> None:
+            """
+            Desactiva el caché de prepared statements tras cada nueva conexión.
+
+            El Transaction Pooler de Supabase reutiliza conexiones físicas entre
+            sesiones distintas. Si psycopg3 cachea prepared statements, la segunda
+            sesión recibe DuplicatePreparedStatement al intentar registrarlos de nuevo.
+            Setear `prepare_threshold = 0` deshabilita el caché en la conexión.
+            """
+            # psycopg3 expone prepare_threshold en el objeto de conexión nativo.
+            # Setearlo a 0 evita que psycopg3 prepare statements en futuras queries.
+            if hasattr(dbapi_conn, "prepare_threshold"):
+                dbapi_conn.prepare_threshold = 0  # type: ignore[union-attr]
+            # DEALLOCATE ALL con prepare=False evita que psycopg3 prepare el propio
+            # DEALLOCATE como statement (lo que causaría DuplicatePreparedStatement
+            # si la conexión física ya tiene _pg3_0 de una sesión anterior).
+            try:
+                cursor = dbapi_conn.cursor()  # type: ignore[union-attr]
+                cursor.execute("DEALLOCATE ALL", prepare=False)
+                cursor.close()
+            except Exception:
+                pass  # Si el pooler ya está limpio, ignorar el error
+
+        return engine
     if url.startswith("sqlite"):
         kwargs: dict = {"connect_args": {"check_same_thread": False}, "future": True}
         if ":memory:" in url:
