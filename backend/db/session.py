@@ -6,18 +6,19 @@ vía Supavisor — usar NullPool evita doble pooling que causa conexiones colgad
 
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import NullPool, StaticPool
 
 
 def make_engine(url: str) -> Engine:
     if "pooler.supabase.com" in url:
         return create_engine(url, poolclass=NullPool, future=True)
     if url.startswith("sqlite"):
-        return create_engine(
-            url,
-            connect_args={"check_same_thread": False},
-            future=True,
-        )
+        kwargs: dict = {"connect_args": {"check_same_thread": False}, "future": True}
+        if ":memory:" in url:
+            # StaticPool asegura que todas las conexiones comparten
+            # la misma DB in-memory (necesario para tests con hilos).
+            kwargs["poolclass"] = StaticPool
+        return create_engine(url, **kwargs)
     return create_engine(url, future=True)
 
 
