@@ -32,7 +32,7 @@ from shiny import module, reactive, render, ui
 
 from backend.domain.enums import ALL_SEASONS, BloqueKind
 from backend.domain.inputs import NewProjectCell
-from backend.shiny_app.state import upsert_ha_cell
+from backend.shiny_app.state import batch_upsert_ha_cells
 
 _SEASON_LABELS = ["T26/27", "T27/28", "T28/29", "T29/30", "T30/31", "T31/32"]
 
@@ -242,7 +242,13 @@ def new_projects_server(
 
     @reactive.effect
     def _debounced_flush() -> None:
-        """Persiste cuando los valores llevan >= 1.5 s sin cambios."""
+        """
+        Persiste solo las celdas que cambiaron desde el último guardado.
+
+        Compara celda a celda contra `_last_saved` para construir la lista
+        de cambios y llama `batch_upsert_ha_cells` una sola vez (6 queries
+        en total, en lugar de N×8 queries individuales).
+        """
         reactive.invalidate_later(1.5)
         p = _pending.get()
         if not p:
@@ -251,26 +257,37 @@ def new_projects_server(
             return
 
         last = _last_saved.get()
+        # Comparación rápida del dict completo para el caso sin cambios
         if last and last.get("vals") == p["vals"] and last.get("variety") == p["variety"]:
             return
 
         sid = scenario_id_rv.get()
         variety = p["variety"]
-        saved_count = 0
+        last_vals: dict = last.get("vals", {}) if last else {}
+
+        # Solo procesar celdas que realmente cambiaron
+        changed_cells: list[NewProjectCell] = []
         for (bloque_key, sub, season), ha in p["vals"].items():
+            last_ha = last_vals.get((bloque_key, sub, season), 0.0)
+            if abs(ha - last_ha) < 1e-9:  # Sin cambio
+                continue
             try:
-                cell = NewProjectCell(
-                    bloque=BloqueKind(bloque_key),
-                    sub_proyecto=sub,
-                    variety_name=variety,
-                    season=season,  # type: ignore[arg-type]
-                    hectareas=ha,
+                changed_cells.append(
+                    NewProjectCell(
+                        bloque=BloqueKind(bloque_key),
+                        sub_proyecto=sub,
+                        variety_name=variety,
+                        season=season,  # type: ignore[arg-type]
+                        hectareas=ha,
+                    )
                 )
-                upsert_ha_cell(sid, cell)
-                saved_count += 1
             except Exception:
                 pass
 
-        if saved_count > 0:
-            _last_saved.set({"vals": p["vals"], "variety": variety})
-            reload_fn()
+        if changed_cells:
+            try:
+                batch_upsert_ha_cells(sid, changed_cells)
+                _last_saved.set({"vals": p["vals"], "variety": variety})
+                reload_fn()
+            except Exception:
+                pass
