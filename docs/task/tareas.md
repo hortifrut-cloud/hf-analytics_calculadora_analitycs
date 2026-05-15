@@ -1303,61 +1303,61 @@
 
 ---
 
-## [ ] Fase 10 — Despliegue (Supabase + ShinyApps.io)
+## [/] Fase 10 — Despliegue (Supabase + ShinyApps.io)
 
 - **Objetivo:** app accesible online con datos en Supabase Postgres.
 - **AC global:** URL pública funcional con todos los flujos validados.
 
 ---
 
-### [ ] T10.1 — Provisión Supabase
+### [/] T10.1 — Provisión Supabase
 
-#### [ ] A10.1.1 — Crear proyecto Supabase free tier
+#### [/] A10.1.1 — Crear proyecto Supabase free tier
 
 - **Proceso:** UI Supabase → New project → región más cercana.
 - **AC:** dashboard accesible.
 
-#### [ ] A10.1.2 — Copiar transaction pooler URL (port 6543)
+#### [/] A10.1.2 — Copiar transaction pooler URL (port 6543)
 
 - **Lógica:** Settings → Database → Connection pooling → Transaction mode.
 - **Formato esperado:** `postgresql+psycopg://postgres.<ref>:<pwd>@aws-0-<region>.pooler.supabase.com:6543/postgres`.
 - **AC:** URL guardada en password manager.
 
-#### [ ] A10.1.3 — `alembic upgrade head` contra Supabase
+#### [/] A10.1.3 — `alembic upgrade head` contra Supabase
 
 - **Proceso:** setear `DATABASE_URL` en `.env`, `uv run alembic upgrade head`.
 - **AC:** tablas creadas; verificar en Table Editor de Supabase.
 
 ---
 
-### [ ] T10.2 — Adaptar `session.py` para Supabase
+### [/] T10.2 — Adaptar `session.py` para Supabase
 
 - **Cubierto:** A3.1.2 ya tiene la detección. Verificar funciona con la URL real.
 
-#### [ ] A10.2.1 — Smoke test contra Supabase
+#### [/] A10.2.1 — Smoke test contra Supabase
 
 - **Tests:** `uv run pytest tests/integration -k supabase --use-supabase` (flag personalizado).
 - **AC:** repos funcionan contra Postgres real.
 
 ---
 
-### [ ] T10.3 — `.rscignore` + `requirements.txt`
+### [X] T10.3 — `.rscignore` + `requirements.txt`
 
-#### [ ] A10.3.1 — Generar `requirements.txt`
+#### [X] A10.3.1 — Generar `requirements.txt`
 
 - **Proceso:** `uv pip compile pyproject.toml -o requirements.txt`. Revisar manualmente y NO incluir dev deps.
 - **AC:** archivo presente y sin packages dev.
 
-#### [ ] A10.3.2 — Validar `.rscignore`
+#### [X] A10.3.2 — Validar `.rscignore`
 
 - **Proceso:** `rsconnect deploy --dry-run` (con cuenta configurada).
 - **AC:** bundle final no contiene `frontend/`, `node_modules/`, `tests/`, `docs/`, `scripts/`.
 
 ---
 
-### [ ] T10.4 — Primer deploy
+### [/] T10.4 — Primer deploy
 
-#### [ ] A10.4.1 — Registrar cuenta
+#### [/] A10.4.1 — Registrar cuenta
 
 - **Proceso:**
   ```powershell
@@ -1367,23 +1367,23 @@
   ```
 - **AC:** `rsconnect list-accounts` muestra la cuenta.
 
-#### [ ] A10.4.2 — Deploy inicial
+#### [/] A10.4.2 — Deploy inicial
 
 - **Proceso:**
   ```powershell
   uv run python -c "from rsconnect.main import cli; cli()" deploy shiny . `
       --entrypoint app:app --name $env:rsconnect_usuario `
-      --title "HF-Breeding-Planner" --new
+      --title "calculadora_analitycs" --new
   ```
-- **AC:** URL pública accesible.
+- **AC:** URL pública accesible en `<usuario>.shinyapps.io/calculadora_analitycs/`.
 
 ---
 
-### [ ] T10.5 — Redeploy
+### [/] T10.5 — Redeploy
 
-#### [ ] A10.5.1 — Documentar `--app-id`
+#### [/] A10.5.1 — Documentar `--app-id`
 
-- **Proceso:** registrar el `app-id` que devuelve el primer deploy en `ejecucion.md`. Redeploys:
+- **Proceso:** registrar el `app-id` que devuelve el primer deploy en `ejecucion.md §5.4`. Redeploys:
   ```powershell
   uv run python -c "from rsconnect.main import cli; cli()" deploy shiny . `
       --entrypoint app:app --name $env:rsconnect_usuario --app-id <ID>
@@ -1392,9 +1392,9 @@
 
 ---
 
-### [ ] T10.6 — Verificación post-deploy
+### [/] T10.6 — Verificación post-deploy
 
-#### [ ] A10.6.1 — Checklist
+#### [/] A10.6.1 — Checklist
 
 - **Checklist** (basado en `doc_guia/ejecucion.md` §5.5):
   - [ ] URL pública abre sin errores.
