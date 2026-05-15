@@ -910,56 +910,56 @@
 
 ---
 
-## [ ] Fase 4 — API Starlette
+## [X] Fase 4 — API Starlette
 
 - **Objetivo:** exponer CRUD + recompute + export.
 - **AC global:** OpenAPI generada documenta todos los endpoints; tests de integración pasan.
 
 ---
 
-### [ ] T4.1 — Schemas Pydantic para request/response
+### [X] T4.1 — Schemas Pydantic para request/response
 
-#### [ ] A4.1.1 — DTOs separados de modelos de dominio
+#### [X] A4.1.1 — DTOs separados de modelos de dominio
 
 - **Lógica:** evitar exponer campos internos (ej. `id`, `created_at`).
 - **AC:** schemas en `backend/api/schemas.py`.
 
 ---
 
-### [ ] T4.2 — Rutas
+### [X] T4.2 — Rutas
 
 - **AC:** tabla de endpoints documentada y tests para cada uno.
 
-#### [ ] A4.2.1 — `GET/POST /api/scenarios`
+#### [X] A4.2.1 — `GET/POST /api/scenarios`
 
 - **Tests:** crear escenario, listarlo.
 - **AC:** 201 al crear, 200 al listar.
 
-#### [ ] A4.2.2 — `GET/PUT/DELETE /api/scenarios/{id}`
+#### [X] A4.2.2 — `GET/PUT/DELETE /api/scenarios/{id}`
 
 - **Tests:** roundtrip CRUD.
 - **AC:** 404 si no existe.
 
-#### [ ] A4.2.3 — Variedades
+#### [X] A4.2.3 — Variedades
 
 - **Endpoints:** `POST /api/scenarios/{id}/varieties`, `PUT /api/varieties/{id}/params`, `DELETE /api/varieties/{id}`.
 - **AC:** validación Pydantic 422 si falta `Año k`.
 
-#### [ ] A4.2.4 — Rules
+#### [X] A4.2.4 — Rules
 
 - **Endpoints:** `GET/PUT /api/scenarios/{id}/rules`.
 - **AC:** defaults se devuelven en escenario nuevo.
 
-#### [ ] A4.2.5 — Celdas de ha
+#### [X] A4.2.5 — Celdas de ha
 
-- **Endpoints:** `PUT /api/scenarios/{id}/new-projects/{cell_id}` (upsert).
+- **Endpoints:** `PUT /api/scenarios/{id}/new-projects` (upsert).
 - **AC:** crear/actualizar/poner en 0.
 
 ---
 
-### [ ] T4.3 — Recompute endpoint
+### [X] T4.3 — Recompute endpoint
 
-#### [ ] A4.3.1 — `POST /api/scenarios/{id}/recompute`
+#### [X] A4.3.1 — `POST /api/scenarios/{id}/recompute`
 
 - **Lógica:** lee desde DB → construye `ScenarioState` → llama `recompute()` → retorna `DerivedState` como JSON.
 - **Tests:** `tests/integration/test_api_recompute.py` envía escenario UI.png, compara JSON con goldens.
@@ -967,9 +967,9 @@
 
 ---
 
-### [ ] T4.4 — Export XLSX
+### [X] T4.4 — Export XLSX
 
-#### [ ] A4.4.1 — `GET /api/scenarios/{id}/export.xlsx`
+#### [X] A4.4.1 — `GET /api/scenarios/{id}/export.xlsx`
 
 - **Lógica:** xlsxwriter, 5 hojas (una por sección UI), formatos `#,##0`. Headers ciruela/verde según UI.png.
 - **Tests:** abrir el XLSX con `openpyxl` y verificar una celda por sección.
@@ -977,9 +977,9 @@
 
 ---
 
-### [ ] T4.5 — Manejo de errores
+### [X] T4.5 — Manejo de errores
 
-#### [ ] A4.5.1 — Middleware de excepciones
+#### [X] A4.5.1 — Middleware de excepciones
 
 - **Lógica:**
   - `pydantic.ValidationError` → 422
