@@ -34,6 +34,11 @@ async def lifespan(app: Starlette) -> AsyncIterator[None]:
         app.state.engine = engine
         app.state.SessionLocal = make_session_factory(engine)
 
+    # Inyectar session factory al bridge Shiny (siempre, incluyendo tests)
+    from backend.shiny_app import state as shiny_state
+
+    shiny_state.configure(app.state.SessionLocal)
+
     yield
 
     # Solo libera el engine si fue creado aquí (no en tests)
